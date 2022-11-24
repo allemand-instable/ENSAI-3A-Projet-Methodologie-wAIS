@@ -4,6 +4,8 @@ import numpy as np
 from numpy.typing import NDArray, ArrayLike, DTypeLike
 from pprint import pprint
 
+import test.integrale_polynome_ordre_3 as integrale_polynome_ordre_3
+
 # def fcn(x : NDArray, y : NDArray, z : NDArray) -> float:
 #     return np.log2(x) / np.exp(x)
 
@@ -17,7 +19,7 @@ def fcn(x : float, theta : list)-> float:
 fcn2 = lambda x, theta : (np.exp(-((x - theta[0])**2)/(2*theta[1])))/(np.sqrt(2*np.pi*theta[1]))
 
 
-def main():
+def test01():
     #gradient_selon()
     x = np.array([1,2,3,4,5,6])
     print(x)
@@ -44,3 +46,5 @@ def main():
     dθ_f = gradient_selon(2, fcn2, *arguments)
     print(dθ_f)
 
+def main():
+    integrale_polynome_ordre_3.main()

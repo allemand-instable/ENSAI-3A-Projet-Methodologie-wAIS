@@ -2,11 +2,14 @@ from math_tools.gradient import gradient_selon
 import numpy as np
 from typing import Callable, Any
 from random import randint
+import numpy.random as nprd
+from math_tools.distribution_family import DistributionFamily
+from numpy.typing import ArrayLike
 
-def SGD_L(X, q : Callable[[Any, Any], float] ,𝛾 : int, η_0 : float, θ_0 : float, ɛ : float):
+def SGD_L( q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : float, ɛ : float) -> ArrayLike:
     """_summary_
     
-    X       — observations X = [... X_i ...]
+    (X       — observations X = [... X_i ...] samplées depuis q)
     
     q       — sampling policy : q(𝑥, θ)
     
@@ -15,6 +18,9 @@ def SGD_L(X, q : Callable[[Any, Any], float] ,𝛾 : int, η_0 : float, θ_0 : f
                                 
                                 q = lambda x,θ : np.exp( - (x-θ[0])**2 / (2*θ[1]) )/(np.sqrt(2*np.pi*θ[1]))
                                 gives a normal law density
+    
+    
+    N       — Nombre de samples tirés par la distribution q à chaque itération
     
     𝛾       — nombre d'observations à tirer aléatoirement
     
@@ -31,7 +37,13 @@ def SGD_L(X, q : Callable[[Any, Any], float] ,𝛾 : int, η_0 : float, θ_0 : f
     θ_t = θ_0
     # on s'assure de commencer la première itération
     norm_grad_L = (ɛ + 1)
+    
+    X = []
+    
     while norm_grad_L > ɛ :
+        
+        # on rajoute N observations samplées depuis la sampling policy q_t
+        X.append( q.sample(N) )
         
         # on détermine les observations aléatoires tirées :
         
@@ -40,9 +52,9 @@ def SGD_L(X, q : Callable[[Any, Any], float] ,𝛾 : int, η_0 : float, θ_0 : f
         
         # on update la valeur de L_i(θ)
         # q : Callable[[Any, Any], float]     = lambda x,θ : 
-        h : Callable[[Any, Any], float]     = lambda x, θ : f(x)/q(x, θ)
+        h : Callable[[Any, Any], float]     = lambda x, θ : f(x)/q.density_fcn(x, θ)
         # ⟶ scalaire
-        ω : Callable[[Any, Any], Any]       = lambda x, θ : gradient_selon(2, lambda u, v : np.log(q(u, v)), *[x, θ] )
+        ω : Callable[[Any, Any], Any]       = lambda x, θ : gradient_selon(2, lambda u, v : np.log(q.density_fcn(u, v)), *[x, θ] )
         # ⟶ vecteur
         L : Callable[[Any, Any], float]     = lambda x_i, θ : h(x_i, θ) * ω(x_i, θ)
         # ⟶ vecteur
@@ -55,11 +67,16 @@ def SGD_L(X, q : Callable[[Any, Any], float] ,𝛾 : int, η_0 : float, θ_0 : f
         norm_grad_L = np.linalg.norm(un_sur_𝛾_Σ_gradL_i_θt)
         
         
-        # update des (hyper) params
+        # update des (hyper) paramsw
         
+        # paramètre
         θ_t = θ_t - η_t * un_sur_𝛾_Σ_gradL_i_θt
         # ⟶ vecteur de la dim de θ
         
+        # sampling policy
+        q.update_parameters(θ_t)
+        
+        # pas
         η_t = update_η(η_t)
     
     return θ_t
