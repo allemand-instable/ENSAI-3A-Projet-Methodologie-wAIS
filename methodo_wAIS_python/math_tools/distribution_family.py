@@ -3,12 +3,18 @@ from numpy.typing import ArrayLike
 from numpy.random import Generator
 from typing import Callable, Union
 
+from utils.log import logstr
+from logging import info, debug, warn, error
+
+
 class DistributionFamily():
     def __init__(self, numpy_random_generator_method : Callable, θ : dict | list | ArrayLike ) -> None:
+                
         self.generator_method : Callable = numpy_random_generator_method
         self.parameters : dict | list | ArrayLike = θ
+        
         # check
-        if type(self.parameters) not in (dict, list, ArrayLike) :
+        if type(self.parameters) not in (list, ArrayLike, dict) :
             raise TypeError("mauvais type de paramètre")
     
     def sample(self,n):
@@ -25,7 +31,7 @@ class DistributionFamily():
     def update_parameters(self, θ):
         self.parameters = θ
     
-    def density(self, x):
+    def density(self, x) -> float:
         if type(self.parameters) is dict :
             return self.density_fcn(x, [*self.parameters.values()])
         if type(self.parameters) is list :
@@ -35,4 +41,9 @@ class DistributionFamily():
     @staticmethod
     def density_fcn(x, θ) -> float:
         pass
-        
+    
+    def parameters_list(self):
+        if type(self.parameters) is dict :
+            return [*self.parameters.values()]
+        elif type(self.parameters) in [list, ArrayLike] :
+            return self.parameters

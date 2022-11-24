@@ -1,12 +1,17 @@
 from math_tools.gradient import gradient_selon
 import numpy as np
-from typing import Callable, Any
+from typing import Callable, Any, Optional
 from random import randint
 import numpy.random as nprd
 from math_tools.distribution_family import DistributionFamily
 from numpy.typing import ArrayLike
 
-def SGD_L( q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : float, ɛ : float) -> ArrayLike:
+from utils.log import logstr
+from logging import info, debug, warn, error
+
+
+
+def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : Optional[ArrayLike] = None, ɛ : float = 1e-10) -> ArrayLike:
     """_summary_
     
     (X       — observations X = [... X_i ...] samplées depuis q)
@@ -31,37 +36,70 @@ def SGD_L( q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : fl
     ɛ       — threshold pour la norme du gradient
     
     """
-    f = lambda x : x
+    
+    info(logstr(f"\n=========    BEGIN : SGD_L   ========="))
+    
     # initialisation
     η_t = η_0
-    θ_t = θ_0
+    if θ_0 is None :
+        θ_t = q.parameters_list()
+    else :
+        θ_t = θ_0
+        q.update_parameters(θ_0)
     # on s'assure de commencer la première itération
     norm_grad_L = (ɛ + 1)
     
     X = []
     
+    debug(logstr(
+        f"\nη_t = {η_t}\nθ_t = {θ_t}\n𝛾 = {𝛾}\nN = {N}\n"
+                ))
+    
+    
+    counter = 1
     while norm_grad_L > ɛ :
         
+        debug(logstr(f"——————————————————————————————————————————\n             ITERATION N° {counter}              \n——————————————————————————————————————————"))
+        
         # on rajoute N observations samplées depuis la sampling policy q_t
-        X.append( q.sample(N) )
+        new_sample = q.sample(N)
+        
+        debug(logstr(f"Nouveau Sample selon la distribution q:\n    —> params : {q.parameters}\n\n{new_sample}"))
+        
+        X = X +  new_sample
+        
+        debug(logstr(f"\nX = {X}"))
+        debug(logstr(f"\nlen(X) = {len(X)}"))
         
         # on détermine les observations aléatoires tirées :
         
-        X_sampled_from_uniform = [ X[randint(a=0, b=len(X))] for k in range(𝛾)  ]
-        print(X_sampled_from_uniform)
+        X_sampled_from_uniform = [ X[randint(a=0, b= (len(X)-1) )] for k in range(𝛾)  ]
+        #                                             b inclu
+        debug(logstr(f"\nX_sampled_from_uniform = {X_sampled_from_uniform}"))
         
         # on update la valeur de L_i(θ)
         # q : Callable[[Any, Any], float]     = lambda x,θ : 
-        h : Callable[[Any, Any], float]     = lambda x, θ : f(x)/q.density_fcn(x, θ)
+        #ω : Callable[[Any, Any], float]     = lambda x, θ : f(x)/q.density_fcn(x, θ)
+        def ω(x,θ) -> float:
+            res = f.density(x)/q.density_fcn(x, θ)
+            debug(logstr(f"ω(x,θ) = {res}"))
+            return res
         # ⟶ scalaire
-        ω : Callable[[Any, Any], Any]       = lambda x, θ : gradient_selon(2, lambda u, v : np.log(q.density_fcn(u, v)), *[x, θ] )
+        #h : Callable[[Any, Any], Any]       = lambda x, θ : gradient_selon(2, lambda u, v : np.log(q.density_fcn(u, v)), *[x, θ] )
+        def h(x,θ):
+            res = gradient_selon(2, lambda u, v : np.log(q.density_fcn(u, v)), *[x, θ] )
+            debug(logstr(f"h(x,θ) = {res}"))
+            return res
         # ⟶ vecteur
         L : Callable[[Any, Any], float]     = lambda x_i, θ : h(x_i, θ) * ω(x_i, θ)
         # ⟶ vecteur
         # on update la valeur du gradient de L selon la méthode de la SGD
+        debug(logstr("calcul de L_list_divided_by_𝛾"))
         L_list_divided_by_𝛾 = [ L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(𝛾) ]
+        debug(logstr(f"L_list_divided_by_𝛾 = \n{L_list_divided_by_𝛾}"))
         # ⟶ list[vecteur]
         un_sur_𝛾_Σ_gradL_i_θt = np.add.reduce( L_list_divided_by_𝛾 )
+        debug(logstr(f"un_sur_𝛾_Σ_gradL_i_θt = {un_sur_𝛾_Σ_gradL_i_θt}"))
         # ⟶ vecteur de la dim de θ
         
         norm_grad_L = np.linalg.norm(un_sur_𝛾_Σ_gradL_i_θt)
@@ -71,6 +109,7 @@ def SGD_L( q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : fl
         
         # paramètre
         θ_t = θ_t - η_t * un_sur_𝛾_Σ_gradL_i_θt
+        debug(logstr(f"θ_t+1 = {θ_t}"))
         # ⟶ vecteur de la dim de θ
         
         # sampling policy
@@ -78,6 +117,10 @@ def SGD_L( q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : fl
         
         # pas
         η_t = update_η(η_t)
+        debug(logstr(f"η_t+1 = {η_t}"))
+        counter += 1
+    
+    info(logstr("\n=========     FIN : SGD_L     ========="))
     
     return θ_t
        

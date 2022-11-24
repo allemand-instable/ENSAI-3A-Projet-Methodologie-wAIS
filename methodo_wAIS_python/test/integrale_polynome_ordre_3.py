@@ -5,6 +5,10 @@ from math_tools.stochastic_gradient_descent import SGD_L
 import numpy.random as nprd
 from pprint import pprint
 import matplotlib.pyplot
+from math_tools.normal_family import NormalFamily
+import plotly.express as px
+from math_tools.distribution_family import DistributionFamily
+
 
 A = -2
 B = 7
@@ -31,42 +35,35 @@ def h(x) :
     return np.exp(- x**2/2)/(np.sqrt(2*np.pi))
 # h = 𝒩(0,1) est la vraie densité, on va tenter de l'approximer en faisant partir q de loin :
 
-# famille normale 𝒩
-def norm(x, θ):
-    μ   = θ[0]
-    Σ   = θ[1]
-    cste_norm = 1/(np.sqrt(2*np.pi))
-    
-
-# 𝒩( 5, 9 )
-θ_0 = {
-    "loc" : 5,
-    "scale" : 3
-}
-
-θ_0 = [5,3]
-
-from math_tools.distribution_family import DistributionFamily
-
 
 # q = DistributionFamily(nprd.normal, θ_0 )
 # X = q.sample(2000)
 # pprint(X)
-
-from math_tools.normal_family import NormalFamily
-
-q = NormalFamily(*θ_0)
-X = q.sample(650)
-
-import plotly.express as px
-px.histogram(X, nbins=50).show()
+# px.histogram(X, nbins=50).show()
 
 def main():
+        
+    determiner_theta_opt()
     
+    # 1077.75
+    
+def determiner_theta_opt():
+    # 𝒩( 5, 9 )
+    θ_0 = {
+        "loc" : 5,
+        "scale" : 3
+    }
+
+    θ_0 = [5,3]
+    q = NormalFamily(*θ_0)
+    f = NormalFamily(μ=0, Σ = 1)
+    X = q.sample(650)
+    theta_opt = SGD_L(f, q, 100, 20, 0.1)
+    pprint(theta_opt)
+
+
+def calc_int_analytique():
     coeffs = [3, 2, 42]
     
     int_analytique = int_P_eval(A,B, *coeffs)
     print(int_analytique)
-    
-    # 1077.75
-    

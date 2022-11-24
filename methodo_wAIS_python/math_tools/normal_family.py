@@ -2,6 +2,10 @@ from math_tools.distribution_family import DistributionFamily
 import numpy.random as nprd
 import numpy as np
 
+from utils.log import logstr
+from logging import info, debug, warn, error
+
+
 class NormalFamily(DistributionFamily):
     def __init__(self, μ ,Σ) -> None:
         super().__init__(numpy_random_generator_method = nprd.normal , θ ={"loc" : μ, "scale" : Σ})
