@@ -8,7 +8,7 @@ from numpy.typing import ArrayLike
 
 from utils.log import logstr
 from logging import info, debug, warn, error
-
+from utils.print_array_as_vector import get_vector_str
 
 
 def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : Optional[ArrayLike] = None, ɛ : float = 1e-10) -> ArrayLike:
@@ -78,26 +78,41 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         debug(logstr(f"\nX_sampled_from_uniform = {X_sampled_from_uniform}"))
         
         # on update la valeur de L_i(θ)
-        # q : Callable[[Any, Any], float]     = lambda x,θ : 
+        
+        
         #ω : Callable[[Any, Any], float]     = lambda x, θ : f(x)/q.density_fcn(x, θ)
         def ω(x,θ) -> float:
             res = f.density(x)/q.density_fcn(x, θ)
             debug(logstr(f"ω(x,θ) = {res}"))
             return res
         # ⟶ scalaire
+        
+        
         #h : Callable[[Any, Any], Any]       = lambda x, θ : gradient_selon(2, lambda u, v : np.log(q.density_fcn(u, v)), *[x, θ] )
         def h(x,θ):
             res = gradient_selon(2, lambda u, v : np.log(q.density_fcn(u, v)), *[x, θ] )
-            debug(logstr(f"h(x,θ) = {res}"))
+            debug(logstr(f"h(x,θ) = {get_vector_str(res)}"))
             return res
         # ⟶ vecteur
-        L : Callable[[Any, Any], float]     = lambda x_i, θ : h(x_i, θ) * ω(x_i, θ)
+        
+        
+        #L : Callable[[Any, Any], float]     = lambda x_i, θ : h(x_i, θ) * ω(x_i, θ)
+        def L(x_i, θ):
+            res = h(x_i, θ) * ω(x_i, θ)
+            debug(logstr(f"L_i(θ) = \n{get_vector_str(res)}"))
+            return res
         # ⟶ vecteur
+        
+        
         # on update la valeur du gradient de L selon la méthode de la SGD
         debug(logstr("calcul de L_list_divided_by_𝛾"))
         L_list_divided_by_𝛾 = [ L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(𝛾) ]
-        debug(logstr(f"L_list_divided_by_𝛾 = \n{L_list_divided_by_𝛾}"))
+        debug(logstr(f"L_list_divided_by_𝛾 = \n"))
+        for k in range(len(L_list_divided_by_𝛾)):
+            debug(logstr(f"L_{k+1}(θ) = {get_vector_str(L_list_divided_by_𝛾[k])}"))
         # ⟶ list[vecteur]
+        
+        
         un_sur_𝛾_Σ_gradL_i_θt = np.add.reduce( L_list_divided_by_𝛾 )
         debug(logstr(f"un_sur_𝛾_Σ_gradL_i_θt = {un_sur_𝛾_Σ_gradL_i_θt}"))
         # ⟶ vecteur de la dim de θ
