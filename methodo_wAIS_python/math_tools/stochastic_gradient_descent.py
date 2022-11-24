@@ -73,7 +73,8 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         
         # on détermine les observations aléatoires tirées :
         
-        X_sampled_from_uniform = [ X[randint(a=0, b= (len(X)-1) )] for k in range(𝛾)  ]
+        obs_tirées = nprd.choice(range(len(X)), 𝛾, replace=False)
+        X_sampled_from_uniform = [  X[i] for i in obs_tirées  ]
         #                                             b inclu
         debug(logstr(f"\nX_sampled_from_uniform = {X_sampled_from_uniform}"))
         
@@ -82,7 +83,14 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         
         #ω : Callable[[Any, Any], float]     = lambda x, θ : f(x)/q.density_fcn(x, θ)
         def ω(x,θ) -> float:
-            res = f.density(x)/q.density_fcn(x, θ)
+            
+            f_val = f.density(x)
+            q_val = q.density_fcn(x, θ)
+            
+            debug(logstr(f"f(x) = {f_val}"))
+            debug(logstr(f"q(x, theta) = {q_val}"))
+            
+            res = f_val/q_val
             debug(logstr(f"ω(x,θ) = {res}"))
             return res
         # ⟶ scalaire

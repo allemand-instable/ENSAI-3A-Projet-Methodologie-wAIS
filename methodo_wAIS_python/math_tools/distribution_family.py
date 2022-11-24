@@ -8,7 +8,7 @@ from logging import info, debug, warn, error
 
 
 class DistributionFamily():
-    def __init__(self, numpy_random_generator_method : Callable, θ : dict | list | ArrayLike ) -> None:
+    def __init__(self, numpy_random_generator_method : Callable, θ : dict | list | np.ndarray ) -> None:
                 
         self.generator_method : Callable = numpy_random_generator_method
         self.parameters : dict | list | ArrayLike = θ
@@ -22,14 +22,16 @@ class DistributionFamily():
             return list(self.generator_method( **self.parameters ,size = n))
         elif type(self.parameters) is list :
             return list(self.generator_method( *self.parameters ,size = n))
-        elif type(self.parameters) is ArrayLike :
+        elif type(self.parameters) is np.ndarray :
             if self.parameters.shape[0] >= 2 :
                 return list(self.generator_method( *self.parameters ,size = n))
             else :
                 return list(self.generator_method( self.parameters ,size = n))
     
     def update_parameters(self, θ):
+        debug(logstr(f"old params : {self.parameters}\ntype : {type(self.parameters)}"))
         self.parameters = θ
+        debug(logstr(f"new params : {self.parameters}\ntype : {type(self.parameters)}"))
     
     def density(self, x) -> float:
         if type(self.parameters) is dict :

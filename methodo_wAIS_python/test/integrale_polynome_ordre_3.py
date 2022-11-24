@@ -54,11 +54,11 @@ def determiner_theta_opt():
         "scale" : 3
     }
 
-    θ_0 = [5,3]
+    θ_0 = [5,1]
     q = NormalFamily(*θ_0)
     f = NormalFamily(μ=0, Σ = 1)
     X = q.sample(650)
-    theta_opt = SGD_L(f, q, 100, 20, 0.1)
+    theta_opt = SGD_L(f, q, 100, 35, 0.01)
     pprint(theta_opt)
 
 
