@@ -3,7 +3,7 @@ from logging import debug, info
 from typing import Any, Callable
 
 
-def gradient_selon(arg_num : int ,f : Callable[[], Any], *args ,h = 1e-7)->Callable[[], Any]:
+def gradient_selon(arg_num : int ,f : Callable[[], Any], *args ,h = 1e-7):
     """_summary_
 
     Args:

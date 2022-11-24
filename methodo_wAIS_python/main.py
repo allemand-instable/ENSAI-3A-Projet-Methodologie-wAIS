@@ -8,7 +8,8 @@ import run_test
 
 
 if __name__ == "__main__" :
-    open('./config_logger.yml', 'w').close()
+    open('log/debug.log', 'w').close()
+    open('log/info.log', 'w').close()
     with open('./config_logger.yml', 'r') as f:
         log_cfg = yaml.safe_load(f.read())
         logging.config.dictConfig(log_cfg)
