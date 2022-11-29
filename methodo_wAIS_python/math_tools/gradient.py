@@ -6,7 +6,7 @@ from logging import info, debug, warn, error, critical
 
 
 
-def gradient_selon(arg_num : int ,f : Callable[[], Any], *args ,h = 1e-7):
+def gradient_selon(arg_num : int ,f : Callable[[], Any], *args ,h = 1e-6):
     """_summary_
 
     Args:
@@ -79,6 +79,9 @@ def gradient_selon(arg_num : int ,f : Callable[[], Any], *args ,h = 1e-7):
         debug(logstr(f"new_args = {new_args}"))
         # calcul approché du gradient de f(u,v,w,...) selon w
         gradient_composante = (f(*new_args) - f(*args))/h
+        debug(logstr(f"f(new_args) = {f(*new_args)}"))
+        debug(logstr(f"f(args) = {f(*args)}"))
+        debug(logstr(f"∂{index}_f[{composante_index}] = {gradient_composante}"))
         # grad_w f(u,v,w,...) 
         gradient[composante_index] = gradient_composante
     

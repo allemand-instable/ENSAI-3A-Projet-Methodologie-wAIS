@@ -6,6 +6,7 @@ from typing import Callable, Union
 from utils.log import logstr
 from logging import info, debug, warn, error
 
+import copy
 
 class DistributionFamily():
     def __init__(self, numpy_random_generator_method : Callable, θ : dict | list | np.ndarray ) -> None:
@@ -46,6 +47,9 @@ class DistributionFamily():
     
     def parameters_list(self):
         if type(self.parameters) is dict :
-            return [*self.parameters.values()]
+            return np.array([*self.parameters.values()])
         elif type(self.parameters) in [list, ArrayLike] :
-            return self.parameters
+            return np.array(self.parameters)
+        
+    def copy(self):
+        return copy.deepcopy(self)

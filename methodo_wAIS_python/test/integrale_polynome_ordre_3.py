@@ -8,7 +8,7 @@ import matplotlib.pyplot
 from math_tools.normal_family import NormalFamily
 import plotly.express as px
 from math_tools.distribution_family import DistributionFamily
-
+from math_tools.gradient import gradient_selon
 
 A = -2
 B = 7
@@ -41,9 +41,31 @@ def h(x) :
 # pprint(X)
 # px.histogram(X, nbins=50).show()
 
+def pre_calc_grad_f(x,y,z):
+    a = (x[0] + x[1] + z[0])
+    p = x[0]*x[1]
+    s = (x[0]+z[0])
+    return np.array( [p, s , 1/(a * (y[2])**2)] )
+
+def f(x,y,z):
+    a = (x[0] + x[1] + z[0])
+    p = x[0]*x[1]
+    s = (x[0]+z[0])
+    return y[0]*p + y[1]*s - 1/(a*(y[2]))
+
+def test_gradient():
+    x = np.array([1,2])
+    y = np.array([8,4,5])
+    z = np.array([9])
+    args = [ x, y, z  ]
+    print(f"grad_selon = {gradient_selon(2, f, *args)}")
+    print(f"pre_calc = {pre_calc_grad_f(*args)}")
+
 def main():
         
     determiner_theta_opt()
+    
+    test_gradient()
     
     # 1077.75
     
@@ -51,19 +73,22 @@ def determiner_theta_opt():
     # 𝒩( 5, 9 )
     θ_0 = {
         "loc" : 5,
-        "scale" : 3
+        "scale" : 90
     }
 
-    θ_0 = [5,1]
+    θ_0 = [5,3]
     q = NormalFamily(*θ_0)
-    f = NormalFamily(μ=0, Σ = 1)
+    f = NormalFamily(μ=7, Σ = 2)
     X = q.sample(650)
-    theta_opt = SGD_L(f, q, 100, 35, 0.01)
+    theta_opt = SGD_L(f, q, 10000, 35, 0.001)
     pprint(theta_opt)
 
 
-def calc_int_analytique():
-    coeffs = [3, 2, 42]
+# def calc_int_analytique():
+#     coeffs = [3, 2, 42]
     
-    int_analytique = int_P_eval(A,B, *coeffs)
-    print(int_analytique)
+#     int_analytique = int_P_eval(A,B, *coeffs)
+#     print(int_analytique)
+
+
+

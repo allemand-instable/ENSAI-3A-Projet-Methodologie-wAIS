@@ -42,6 +42,7 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
     # initialisation
     η_t = η_0
     if θ_0 is None :
+        θ_0 = q.parameters_list()
         θ_t = q.parameters_list()
     else :
         θ_t = θ_0
@@ -55,18 +56,26 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         f"\nη_t = {η_t}\nθ_t = {θ_t}\n𝛾 = {𝛾}\nN = {N}\n"
                 ))
     
+    q_0 = q.copy()
     
     counter = 1
+    
+    X = q_0.sample(N)
+    
+    
     while norm_grad_L > ɛ :
         
         debug(logstr(f"——————————————————————————————————————————\n             ITERATION N° {counter}              \n——————————————————————————————————————————"))
         
         # on rajoute N observations samplées depuis la sampling policy q_t
-        new_sample = q.sample(N)
-        
-        debug(logstr(f"Nouveau Sample selon la distribution q:\n    —> params : {q.parameters}\n\n{new_sample}"))
-        
-        X = X +  new_sample
+        #! importance sampling selon q(θ_0)
+        #? un seul grand échantillon
+        #? new_sample = q_0.sample(N)
+        #?          |
+        #? debug(logstr(f"Nouveau Sample selon la distribution q:\n    —> params : {q_0.parameters}\n\n{new_sample}"))
+        #?          |
+        #? un seul grand échantillon
+        #? X = X +  new_sample
         
         debug(logstr(f"\nX = {X}"))
         debug(logstr(f"\nlen(X) = {len(X)}"))
@@ -83,6 +92,8 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         
         #ω : Callable[[Any, Any], float]     = lambda x, θ : f(x)/q.density_fcn(x, θ)
         def ω(x,θ) -> float:
+            
+            debug(logstr(f"θ = {θ}"))
             
             f_val = f.density(x)
             q_val = q.density_fcn(x, θ)
@@ -106,8 +117,22 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         
         #L : Callable[[Any, Any], float]     = lambda x_i, θ : h(x_i, θ) * ω(x_i, θ)
         def L(x_i, θ):
-            res = h(x_i, θ) * ω(x_i, θ)
+            #! importance sampling selon q(θ_0)
+            debug("calcul de L :")
+            res = h(x_i, θ) * ω(x_i, θ_0 )
             debug(logstr(f"L_i(θ) = \n{get_vector_str(res)}"))
+            
+            norm_res = np.linalg.norm(res)
+            norm_theta = np.linalg.norm(np.array(θ))
+            alpha = 10
+            
+            # avec les ω, si on a un ω ~ 10 000 lorsque q << f 
+            # on va avoir la norme de la direction qui explose
+            # on essaye d'éviter cela
+            
+            if norm_res > alpha * norm_theta :
+                debug(logstr(f"{norm_res} = || res || > {alpha} x || θ || = {alpha*norm_theta}\n\nreturning zeros..."))
+                return np.zeros(θ.shape)
             return res
         # ⟶ vecteur
         
@@ -132,7 +157,9 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         
         # paramètre
         θ_t = θ_t - η_t * un_sur_𝛾_Σ_gradL_i_θt
-        debug(logstr(f"θ_t+1 = {θ_t}"))
+        str_theta = f"θ_t+1 = {θ_t}"
+        print(str_theta)
+        debug(logstr(str_theta))
         # ⟶ vecteur de la dim de θ
         
         # sampling policy
