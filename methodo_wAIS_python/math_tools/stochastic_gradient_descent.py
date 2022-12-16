@@ -11,7 +11,7 @@ from logging import info, debug, warn, error
 from utils.print_array_as_vector import get_vector_str
 
 
-def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : Optional[ArrayLike] = None, ɛ : float = 1e-10) -> ArrayLike:
+def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int, η_0 : float, θ_0 : Optional[ArrayLike] = None, ɛ : float = 1e-6) -> ArrayLike:
     """_summary_
     
     (X       — observations X = [... X_i ...] samplées depuis q)
@@ -56,10 +56,12 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         f"\nη_t = {η_t}\nθ_t = {θ_t}\n𝛾 = {𝛾}\nN = {N}\n"
                 ))
     
+    #! importance sampling selon q(θ_0)
     q_0 = q.copy()
     
     counter = 1
     
+    #? un seul grand échantillon
     X = q_0.sample(N)
     
     
@@ -68,8 +70,10 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         debug(logstr(f"——————————————————————————————————————————\n             ITERATION N° {counter}              \n——————————————————————————————————————————"))
         
         # on rajoute N observations samplées depuis la sampling policy q_t
-        #! importance sampling selon q(θ_0)
         #? un seul grand échantillon
+        #! importance sampling selon q(θ_0)
+        #!               |
+        #!               v
         #? new_sample = q_0.sample(N)
         #?          |
         #? debug(logstr(f"Nouveau Sample selon la distribution q:\n    —> params : {q_0.parameters}\n\n{new_sample}"))
@@ -116,11 +120,13 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         
         
         #L : Callable[[Any, Any], float]     = lambda x_i, θ : h(x_i, θ) * ω(x_i, θ)
-        def L(x_i, θ):
-            #! importance sampling selon q(θ_0)
+        def grad_L(x_i, θ):
             debug("calcul de L :")
+            #! importance sampling selon q(θ_0)
+            #!                        |
+            #!                        v
             res = h(x_i, θ) * ω(x_i, θ_0 )
-            debug(logstr(f"L_i(θ) = \n{get_vector_str(res)}"))
+            debug(logstr(f"∇L_i(θ) = \n{get_vector_str(res)}"))
             
             norm_res = np.linalg.norm(res)
             norm_theta = np.linalg.norm(np.array(θ))
@@ -139,14 +145,16 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         
         # on update la valeur du gradient de L selon la méthode de la SGD
         debug(logstr("calcul de L_list_divided_by_𝛾"))
-        L_list_divided_by_𝛾 = [ L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(𝛾) ]
-        debug(logstr(f"L_list_divided_by_𝛾 = \n"))
-        for k in range(len(L_list_divided_by_𝛾)):
-            debug(logstr(f"L_{k+1}(θ) = {get_vector_str(L_list_divided_by_𝛾[k])}"))
+        grad_L_list_divided_by_𝛾 = [ grad_L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(𝛾) ]
+        debug(logstr(f"∇L_list_divided_by_𝛾 = \n"))
+        
+        # DEBUG : afficher chaque composante ∇L_i/𝛾
+        for k in range(len(grad_L_list_divided_by_𝛾)):
+            debug(logstr(f"∇L_{k+1}(θ) = {get_vector_str(grad_L_list_divided_by_𝛾[k])}"))
         # ⟶ list[vecteur]
         
         
-        un_sur_𝛾_Σ_gradL_i_θt = np.add.reduce( L_list_divided_by_𝛾 )
+        un_sur_𝛾_Σ_gradL_i_θt = np.add.reduce( grad_L_list_divided_by_𝛾 )
         debug(logstr(f"un_sur_𝛾_Σ_gradL_i_θt = {un_sur_𝛾_Σ_gradL_i_θt}"))
         # ⟶ vecteur de la dim de θ
         
@@ -156,6 +164,9 @@ def SGD_L( f : DistributionFamily ,q : DistributionFamily , N : int, 𝛾 : int,
         # update des (hyper) paramsw
         
         # paramètre
+        #!     minimise L
+        #!        |
+        #!        v
         θ_t = θ_t - η_t * un_sur_𝛾_Σ_gradL_i_θt
         str_theta = f"θ_t+1 = {θ_t}"
         print(str_theta)

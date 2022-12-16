@@ -7,7 +7,8 @@ from logging import info, debug, warn, error
 
 
 import test.integrale_polynome_ordre_3 as integrale_polynome_ordre_3
-
+import test.SGA as SGA
+import test.SGA_seq as SGAseq
 
 # def test01():
 #     fcn = lambda x : x
@@ -39,4 +40,4 @@ import test.integrale_polynome_ordre_3 as integrale_polynome_ordre_3
 #     print(dθ_f)
 
 def main():
-    integrale_polynome_ordre_3.main()
+    SGAseq.mean_seq()

@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.polynomial.polynomial import Polynomial
 from numpy.polynomial.polynomial import polyval
-from math_tools.stochastic_gradient_descent import SGD_L
+from math_tools.stochastic_gradient_descent_SEQUENTIAL import SGA_L
 import numpy.random as nprd
 from pprint import pprint
 import matplotlib.pyplot
@@ -65,23 +65,36 @@ def main():
         
     determiner_theta_opt()
     
-    test_gradient()
+    #test_gradient()
     
     # 1077.75
     
+from math_tools.stochastic_gradient_ascent_POO import SGA_KullbackLeibler_Likelihood
+
 def determiner_theta_opt():
     # 𝒩( 5, 9 )
-    θ_0 = {
-        "loc" : 5,
-        "scale" : 90
-    }
+    # θ_0 = {
+    #     "loc" : 5,
+    #     "scale" : 90
+    # }
 
-    θ_0 = [5,3]
+    θ_0 = [10,8]
     q = NormalFamily(*θ_0)
-    f = NormalFamily(μ=7, Σ = 2)
+    f = NormalFamily(μ=7, Σ = 1)
     X = q.sample(650)
-    theta_opt = SGD_L(f, q, 10000, 35, 0.001)
-    pprint(theta_opt)
+    
+    # sga = SGA_KullbackLeibler_Likelihood(   f = f, 
+    #                                         q = q, 
+    #                                         nb_drawn_samples = 100, 
+    #                                         𝛄 = 40, 
+    #                                         η_0 = 1, 
+                                            
+    #                                         iter_limit=2000
+    #                                         )
+    # sga.execute()
+    # pprint(sga.θ_t)
+
+    SGA_L(f,q,100, 30, 1, iter_limit=2000)
 
 
 # def calc_int_analytique():
