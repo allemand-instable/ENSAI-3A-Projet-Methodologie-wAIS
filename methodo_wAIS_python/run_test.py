@@ -40,4 +40,8 @@ import test.SGA_seq as SGAseq
 #     print(dθ_f)
 
 def main():
-    SGAseq.mean_seq()
+    print(SGAseq.mean_seq(1,20, 500) )
+    print(SGAseq.mean_seq(1,3, 500)  )
+    print(SGAseq.mean_seq(3,13, 500) )
+    print(SGAseq.mean_seq(9,20, 500) )
+    print(SGAseq.mean_seq(20,10, 500))
