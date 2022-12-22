@@ -6,8 +6,6 @@ from utils.log import logstr
 from logging import info, debug, warn, error
 
 
-import test.integrale_polynome_ordre_3 as integrale_polynome_ordre_3
-import test.SGA as SGA
 import test.SGA_seq as SGAseq
 
 # def test01():
