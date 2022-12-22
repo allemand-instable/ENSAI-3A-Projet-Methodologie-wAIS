@@ -3,7 +3,7 @@ from math_tools.sga_sequential import sga_kullback_leibler_likelihood
 
 from math_tools.normal_family import NormalFamily
 
-def mean_seq(var_init, magnitude = 20, max_iter = 200):
+def mean_seq(var_init, magnitude = 20, max_iter = 200, step = 1.5):
 
     
     μ_target : float = magnitude * (0.5 - np.random.rand())
@@ -21,9 +21,9 @@ def mean_seq(var_init, magnitude = 20, max_iter = 200):
     
     intial_q = NormalFamily(*θ_initial)
     
-    N = 500
-    u = 100
-    eta_0 = 1.5
+    N = 80
+    u = 20
+    eta_0 = step
     
     # res = SGA_L(f=target_f, q=intial_q, N=N, γ = u, η_0 = eta_0, iter_limit=max_iter, benchmark=True)   
     res = sga_kullback_leibler_likelihood(

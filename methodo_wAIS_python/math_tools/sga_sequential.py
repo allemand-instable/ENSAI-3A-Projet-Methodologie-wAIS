@@ -229,7 +229,7 @@ def sga_kullback_leibler_likelihood(
         # todo
         # comprendre pourquoi si je mets juste X = new_sample
         # on finit par avoir des variances négatives ?
-        X = new_sample + X
+        X = new_sample #+ X
         # X = new_samples.pop(0)
         
         if nb_stochastic_choice == nb_drawn_samples :
