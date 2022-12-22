@@ -5,17 +5,17 @@ import numpy as np
 from math import factorial
 from utils.log import logstr
 from logging import info, debug, warn, error
+from scipy.special import factorial
 
-
-class StudentFamily(DistributionFamily):
+class ChiSquareFamily(DistributionFamily):
     def __init__(self, k) -> None:
-        super().__init__(numpy_random_generator_method = nprd.standard_t, θ ={"df" : k})
+        super().__init__(numpy_random_generator_method = nprd.chisquare, θ ={"df" : k})
     
     @staticmethod
     def density_fcn(x, θ) -> float:
         
         k = θ[0]
-        proba = factorial(((k + 1)/2)-1) / (np.sqrt(np.pi*k) * 
-        factorial((k/2)-1)) * (1 + (x**2)/k)**(-(k+1)/2)
+        proba = (1 / ((2**(k/2))*factorial((k/2)-1)) 
+        * (x**(k/2-1))*np.exp(-x/2))
     
         return proba
