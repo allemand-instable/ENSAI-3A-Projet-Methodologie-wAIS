@@ -1,15 +1,16 @@
-from distribution_family.distribution_family import DistributionFamily
+from math_tools.distribution_family import DistributionFamily
 import numpy.random as nprd
 import numpy as np
-from scipy.special import factorial
 
+from scipy.stats import multivariate_t
+from scipy.special import factorial
 from utils.log import logstr
 from logging import info, debug, warn, error
 
 
 class StudentFamily(DistributionFamily):
     def __init__(self, k) -> None:
-        super().__init__(numpy_random_generator_method = nprd.standard_t, θ ={"df" : k})
+        super().__init__(numpy_random_generator_method = nprd.student, θ ={"df" : k})
     
     @staticmethod
     def density_fcn(x, θ) -> float:

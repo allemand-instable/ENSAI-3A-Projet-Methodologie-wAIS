@@ -2,7 +2,7 @@ from distribution_family.distribution_family import DistributionFamily
 import numpy.random as nprd
 import numpy as np
 
-from math import factorial
+from scipy.special import factorial
 from utils.log import logstr
 from logging import info, debug, warn, error
 from scipy.special import factorial
