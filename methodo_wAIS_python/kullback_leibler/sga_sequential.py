@@ -118,11 +118,13 @@ def initialisation(q : DistributionFamily, ɛ : float, θ_0 : Optional[NDArray],
 
 
 def update_η(η_t : float) -> float:
+    """fonction d'update du pas : ici constante, mais devrait être mise en pas variable pour une meilleure convergence"""
     η_t_plus_1 = η_t
     return η_t_plus_1
 
 
 def cond_n_de_suite__update_state(cond, state : list[bool]) -> list[bool]:
+    """lors du Gradient Ascent, on veut arrêter les itérations si on remarque que la norme du gradient est en dessous d'un seuil | pour s'assurer de ne pas être dans un minimum local non global, on regarde si cette condition est vérifiée plusieurs fois d'affilée"""
     # true and false in state
     if all(state):
         new_state = state
@@ -145,6 +147,7 @@ def compute_grad_L_estimator(f_target : DistributionFamily,
                              max_L_gradient_norm : int | float, 
                              X_sampled_from_uniform : List[float]
                              ) -> NDArray:
+    """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling"""
     def ω(x,θ) -> float:
         f_val = f_target.density(x)
         q_val = q.density_fcn(x, θ)
@@ -188,6 +191,7 @@ def compute_grad_L_estimator(f_target : DistributionFamily,
 def show_error_graph(last_θ_t : NDArray, θ_target : NDArray, θ_init : NDArray, benchmark_graph : BenchmarkGraph,
                      nb_drawn_samples, nb_stochastic_choice, step, max_L_gradient_norm  # subtitle parameters
                     ) -> None:
+    """à partir du résultat de la SGA et des paramètres initiaux, produit le graphe des erreurs **relatives** du paramètre obtenu à partir du paramètre qui était visé, et ce en produisant un graphe composante par composante du paramètre θ estimé"""
     if benchmark_graph is None :
         raise TypeError("the benchmark_graph should not be None")
     

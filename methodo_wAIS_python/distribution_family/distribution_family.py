@@ -24,6 +24,7 @@ class DistributionFamily():
             raise TypeError("mauvais type de paramètre")
     
     def sample(self,n) -> list[Any] | None:
+        """renvoie une liste de n tirages selon la loi de distribution de l'objet"""
         if type(self.parameters) is dict :
             return list(self.generator_method( **self.parameters ,size = n))
         elif type(self.parameters) is list :
@@ -35,6 +36,7 @@ class DistributionFamily():
                 return list(self.generator_method( self.parameters ,size = n))
     
     def update_parameters(self, θ : NDArray | Dict[str, float]) -> None:
+        """change les paramètres de la distribution de l'objet concerné"""
         debug(logstr(f"old params : {self.parameters}\ntype : {type(self.parameters)}"))
         self.parameters = θ
         debug(logstr(f"new params : {self.parameters}\ntype : {type(self.parameters)}"))
@@ -72,6 +74,7 @@ class DistributionFamily():
         return 0.0
     
     def parameters_list(self) -> NDArray[Any]:
+        """retourne les paramètres comme liste de float, peu importe le format initial des paramètres fourni"""
         if type(self.parameters) is dict :
             return np.array([*self.parameters.values()])
         elif type(self.parameters) in [list, ArrayLike, NDArray] :
