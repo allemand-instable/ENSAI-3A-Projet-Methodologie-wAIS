@@ -5,9 +5,26 @@ from numpy.typing import NDArray
 from utils.log import logstr
 from logging import info, debug, warn, error, critical
 
+from numpy.typing import ArrayLike
+from typing import Protocol, Union
+
+vector_or_scalar = NDArray | float
+
+# type hinting
+class MultivariateFunction_to_R(Protocol):
+    """
+    function defined by the relation y = f( 𝑥ᵢ )₁,ₙ
+    
+    i.e
+    
+        Π ℝᴸᵉⁿ⁽ˣ-ⁱ⁾ ⟶   ℝ
+    f : ( 𝑥ᵢ )₁,ₙ   ⟼   y
+    """
+    def __call__(self, *float_args : NDArray[np.float64] ) -> float: ...
 
 
-def gradient_selon(arg_num : int ,f : Callable[[], Any], *args ,h = 1e-7, composante : Optional[int] = None) -> NDArray:
+
+def gradient_selon(arg_num : int ,f : MultivariateFunction_to_R, *args ,h = 1e-7, composante : Optional[int] = None) -> NDArray:
     """renvoie le gradient d'une fonction multivariée f(... 𝑥ᵢ ...)₁,ₙ selon  𝑥_{arg_num}  évalué en les arguments de f (*args)  |   où 𝑥ᵢ ∈ ℝ^p
     
     si composante = 𝑘   ⟶   renvoie : [𝛁_θₖ]f(x) = [ 0 , ..., [𝜕_θₖ]f(x) , ... , 0 ] ∈ ℝ^p
@@ -55,6 +72,7 @@ def gradient_selon(arg_num : int ,f : Callable[[], Any], *args ,h = 1e-7, compos
     #debug(logstr(f"index = {index}"))
     
     
+    # au cas où quelqu'un donne en argument un float
     argument_differencie : np.ndarray = np.array(args[index])
     #                                   on s'assure que on a bien un vecteur numpy
     #                                   si il l'est déjà, il le reste

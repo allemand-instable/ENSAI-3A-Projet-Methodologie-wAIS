@@ -38,8 +38,12 @@ import test.SGA_seq as SGAseq
 #     print(dθ_f)
 
 def main():
-    print(SGAseq.mean_seq(1,20, 500, 0.01) )
-    print(SGAseq.mean_seq(1,3, 500, 0.01)  )
-    print(SGAseq.mean_seq(3,13, 500, 0.01) )
-    print(SGAseq.mean_seq(9,20, 500, 0.01) )
-    print(SGAseq.mean_seq(20,10, 500, 0.01))
+    # print(SGAseq.mean_seq(1,20, 500, 0.05) )
+    # print(SGAseq.mean_seq(1,3, 500, 0.1)  )
+    
+    params = SGAseq.mean_seq(3,13, 500, 0.2)
+    print(SGAseq.mean_seq(3,13, 500, 0.2, adaptive = True, **params) )
+    params = SGAseq.mean_seq(9,20, 500, 0.2)
+    print(SGAseq.mean_seq(9,20, 500, 0.2, adaptive = True, **params ))
+    params = SGAseq.mean_seq(20,10, 500, 0.5)
+    print(SGAseq.mean_seq(20,10, 500, 0.5, adaptive=True, **params))

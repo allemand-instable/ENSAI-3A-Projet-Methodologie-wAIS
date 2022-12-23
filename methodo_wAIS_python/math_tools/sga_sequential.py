@@ -2,7 +2,7 @@ import numpy as np
 from copy import deepcopy
 
 # typing
-from typing import Callable, Any, Optional, Tuple, Literal
+from typing import Callable, Any, List, Optional, Tuple, Literal
 from numpy.typing import ArrayLike, NDArray
 
 # random
@@ -124,18 +124,28 @@ def cond_n_de_suite__update_state(cond, state : list[bool]) -> list[bool]:
 
 
 
-def compute_grad_L_estimator(f_target, q, θ_t, nb_stochastic_choice,max_L_gradient_norm, X_sampled_from_uniform) -> NDArray:
+def compute_grad_L_estimator(f_target : DistributionFamily, 
+                             q : DistributionFamily, 
+                             θ_t : NDArray, 
+                             nb_stochastic_choice : int,
+                             max_L_gradient_norm : int | float, 
+                             X_sampled_from_uniform : List[float]
+                             ) -> NDArray:
     def ω(x,θ) -> float:
         f_val = f_target.density(x)
         q_val = q.density_fcn(x, θ)
         res = f_val/q_val
-        debug(logstr(f"ω(x,θ) = {res}"))
+        # debug(logstr(f"ω(x,θ) = {res}"))
         return res
     # ⟶ scalaire
 
     def h(x,θ) -> NDArray:
-        res = gradient_selon(2, lambda u, v : np.log(q.density_fcn(u, v)), *[x, θ] )
-        debug(logstr(f"h(x,θ) = {get_vector_str(res)}"))
+        # x ⟼ log qₜ(x)
+        def log_q(u, theta) -> float :
+            return np.log(q.density_fcn(u, theta)) 
+        # [𝛁_θ]log qₜ(x)
+        res = gradient_selon(2, log_q, *[x, θ] )
+        # debug(logstr(f"h(x,θ) = {get_vector_str(res)}"))
         return res
     # ⟶ vecteur
     
@@ -171,7 +181,8 @@ def sga_kullback_leibler_likelihood(
      ɛ : float = 1e-6, 
      iter_limit = 100, 
      benchmark : bool = False, 
-     max_L_gradient_norm : int = 10
+     max_L_gradient_norm : int = 10,
+     adaptive : bool = False
 ) -> NDArray:
     """effectue une stochastic gradient ascent pour le problème d'optimisation de θ suivant le critère de la vraissemblance de Kullback-Leibler
         
@@ -213,24 +224,34 @@ def sga_kullback_leibler_likelihood(
     # useful for computing error
     if benchmark_graph is not None :
         target : NDArray = f_target.parameters_list()
+    else :
+        target = np.array([])
     
     # new_samples = []
+    if not adaptive :
+        X = q_init.sample(500)
+        if X is None :
+            X = []
+            raise ValueError("generated sample is None !")
+    else :
+        X = []
     
     for counter in range(iter_limit):
         if all(cond_n_de_suite__update_state(norm_grad_L <= ɛ, state)):
             debug(logstr(f"norm_grad_L = {norm_grad_L}"))
             break
         
-        new_sample : list | None = q.sample(nb_drawn_samples)
-        # new_samples.append(new_sample)
-        if new_sample is None :
-            raise ValueError(f"could not sample from q \n(params = {q.parameters})\nnew_sample = None")
-        
-        # todo
-        # comprendre pourquoi si je mets juste X = new_sample
-        # on finit par avoir des variances négatives ?
-        X = new_sample #+ X
-        # X = new_samples.pop(0)
+        if adaptive :
+            new_sample : list | None = q.sample(nb_drawn_samples)
+            # new_samples.append(new_sample)
+            if new_sample is None :
+                raise ValueError(f"could not sample from q \n(params = {q.parameters})\nnew_sample = None")
+            # todo
+            # comprendre pourquoi si je mets juste X = new_sample
+            # on finit par avoir des variances négatives ?
+            else :
+                X = new_sample + X
+            # X = new_samples.pop(0)
         
         if nb_stochastic_choice == nb_drawn_samples :
             X_sampled_from_uniform = X
@@ -240,7 +261,18 @@ def sga_kullback_leibler_likelihood(
         
         
         # 𝛁L
-        grad_L_estimator = compute_grad_L_estimator(f_target, q, θ_t, nb_stochastic_choice,max_L_gradient_norm, X_sampled_from_uniform)
+        if adaptive :
+            grad_L_estimator = compute_grad_L_estimator(f_target, q, 
+                                                        θ_t, 
+                                                        nb_stochastic_choice,
+                                                        max_L_gradient_norm, 
+                                                        X_sampled_from_uniform)
+        else :
+            grad_L_estimator = compute_grad_L_estimator(f_target, q_init, 
+                                                        θ_t, 
+                                                        nb_stochastic_choice,
+                                                        max_L_gradient_norm, 
+                                                        X_sampled_from_uniform)
         # ‖𝛁L‖
         norm_grad_L = np.linalg.norm(grad_L_estimator)
         
@@ -253,6 +285,7 @@ def sga_kullback_leibler_likelihood(
         
         # aprameters update
         q.update_parameters(θ_t)
+        # print(q.parameters)
         
         η_t = update_η(η_t)
         debug(logstr(f"η_t+1 = {η_t}"))
