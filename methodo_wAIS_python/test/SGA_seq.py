@@ -1,7 +1,7 @@
 import numpy as np
-from math_tools.sga_sequential import sga_kullback_leibler_likelihood
+from kullback_leibler.sga_sequential import sga_kullback_leibler_likelihood
 from typing import Optional
-from math_tools.normal_family import NormalFamily
+from distribution_family.normal_family import NormalFamily
 
 def mean_seq(
     var_init, 
