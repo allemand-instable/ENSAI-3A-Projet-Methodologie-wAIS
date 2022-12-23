@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import numpy.typing as npt
 
-from math_tools.gradient import gradient_selon
+from gradient.gradient import gradient_selon
 import numpy.polynomial.polynomial as npp 
 
 def P(X : float,Y : float,Z : float, coeffs_x : npt.NDArray, coeffs_y : npt.NDArray, coeffs_z : npt.NDArray, interaction_x_y : float = 0, interaction_y_z : float = 0, interaction_x_z : float = 0, interaction_x2_y : float = 0, interaction_x_z2 : float = 0) -> float:

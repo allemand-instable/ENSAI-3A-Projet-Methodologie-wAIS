@@ -185,7 +185,9 @@ def compute_grad_L_estimator(f_target : DistributionFamily,
 
 
 
-def show_error_graph(last_θ_t : NDArray, θ_target : NDArray, θ_init : NDArray, benchmark_graph : BenchmarkGraph) -> None:
+def show_error_graph(last_θ_t : NDArray, θ_target : NDArray, θ_init : NDArray, benchmark_graph : BenchmarkGraph,
+                     nb_drawn_samples, nb_stochastic_choice, step, max_L_gradient_norm  # subtitle parameters
+                    ) -> None:
     if benchmark_graph is None :
         raise TypeError("the benchmark_graph should not be None")
     
@@ -199,7 +201,7 @@ def show_error_graph(last_θ_t : NDArray, θ_target : NDArray, θ_init : NDArray
     axis_range_dict = {}
     
     for k in range(n):
-        print(f"({1 + k//2}, {1 + k%2})")
+        # print(f"({1 + k//2}, {1 + k%2})")
         fig.add_trace(plgo.Scatter(x=benchmark_graph[0] , y=benchmark_graph[1+k]), row = 1 + k//2 , col = 1 + k%2)
         y_max = max(benchmark_graph[1+k])
         axis_range_dict[f"yaxis{k+1}"] = dict(range=[0, 1.1 * y_max])
@@ -209,7 +211,7 @@ def show_error_graph(last_θ_t : NDArray, θ_target : NDArray, θ_init : NDArray
     
     
     
-    fig.update_layout(title=f"θ_target = {[round(composante, 2) for composante in θ_target]}      θ_init = {[round(composante, 2) for composante in θ_init]}",
+    fig.update_layout(title=f"θ_target = {[round(composante, 2) for composante in θ_target]}      θ_init = {[round(composante, 2) for composante in θ_init]} <br><br><sup>N = {nb_drawn_samples}  |  𝛾 = {nb_stochastic_choice}  | η₀ = {step}  | safety_coeff = {max_L_gradient_norm}</sup>",
     **axis_range_dict)
     fig.show()
 
@@ -363,6 +365,12 @@ def sga_kullback_leibler_likelihood(
         show_error_graph(last_θ_t = θ_t, 
                          θ_target = target, 
                          θ_init = theta_init,
-                         benchmark_graph = benchmark_graph)        
+                         benchmark_graph = benchmark_graph,
+                         # subtitle
+                         nb_drawn_samples = nb_drawn_samples, 
+                         nb_stochastic_choice = nb_stochastic_choice, 
+                         step = step, 
+                         max_L_gradient_norm= max_L_gradient_norm
+                         )        
     return θ_t
 

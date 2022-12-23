@@ -3,8 +3,6 @@ import numpy.random as nprd
 import numpy as np
 
 from scipy.special import factorial
-from utils.log import logstr
-from logging import info, debug, warn, error
 
 
 class FisherFamily(DistributionFamily):
