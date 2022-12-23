@@ -1,4 +1,4 @@
-from math_tools.gradient import gradient_selon
+from gradient.gradient import gradient_selon
 import logging
 import numpy as np
 from pprint import pprint

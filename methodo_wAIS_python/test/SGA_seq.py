@@ -1,7 +1,7 @@
 import numpy as np
-from math_tools.sga_sequential import sga_kullback_leibler_likelihood
+from kullback_leibler.sga_sequential import sga_kullback_leibler_likelihood
 from typing import Optional
-from math_tools.normal_family import NormalFamily
+from distribution_family.normal_family import NormalFamily
 
 def mean_seq(
     var_init, 
@@ -23,15 +23,16 @@ def mean_seq(
         μ_inital : float = μ_target + (0.5 - np.random.rand())*(2*magnitude)
         
         print(f"θ_initial = {θ_initial}")
-    θ_target = np.array([μ_target,1])
-    θ_initial = np.array([μ_inital, var_init])
     
-    print(θ_target)
-    print(θ_initial)
+    θ_target_array = np.array([μ_target,1])
+    θ_initial_array = np.array([μ_inital, var_init])
     
-    target_f = NormalFamily(*θ_target)
+    print(f"target param : {θ_target_array}")
+    print(f"initial param : {θ_initial_array}")
     
-    intial_q = NormalFamily(*θ_initial)
+    target_f = NormalFamily(*θ_target_array)
+    
+    intial_q = NormalFamily(*θ_initial_array)
     
     N = 80
     u = 20
@@ -46,12 +47,12 @@ def mean_seq(
         step=eta_0,
         iter_limit = max_iter,
         benchmark=True,
-        max_L_gradient_norm=10,
+        # max_L_gradient_norm=10,
         adaptive=adaptive
     )
+
+    print(f"\n\nres = {res}\n\n\n")
     
-    d = np.abs(θ_target - res)
-    print(d)
     return {"μ_target" : μ_target, 
             "θ_target" : θ_target, 
             "μ_inital" : μ_inital, 
