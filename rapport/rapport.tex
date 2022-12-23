@@ -1,0 +1,33 @@
+% \input{include/chtex_disable.tex}
+\documentclass[11pt]{report}
+% packages and definitions
+\input{include/include.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\auteur}{Allemand Instable}
+\newcommand{\articletitle}{TITLE}
+\newcommand{\customdate}{22 Mai 2022}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\dominitoc
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%% INCLUDE COMMAND %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%% AND DEFAULTS PARAMETERS %%%%%%%%%%%%%%%%%%%%%%%%%
+\input{include/commands.tex}
+\input{include/default_params.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%% DEBUT COURVERTURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{content/couverture/main.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%% FIN COURVERTURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%% DEBUT ABSTRACT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{content/abstract.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%% FIN ABSTRACT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Ici on insère la table des matières (entre astract et les chapitres)
+\tableofcontents
+%%%%%%%%%%%%%%%%%%%%%%%%% DEBUT CHAPITRES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{content/chapter_1/main.tex}
+\input{content/chapter_2/main.tex}
+\input{content/chapter_3/main.tex}
+%%%%%%%%%%%%%%%%%%%%%%%%% FIN CHAPITRES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

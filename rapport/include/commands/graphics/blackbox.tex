@@ -1,0 +1,52 @@
+% \usetikzlibrary{shapes, backgrounds}
+\tikzset{x=1cm, y=1cm} % Default tikz units
+
+% Command to vertically centre adjacent content
+\newcommand{\vcenteredhbox}[1]{% The only parameter is for the content to centre
+	\begingroup%
+		\setbox0=\hbox{#1}\parbox{\wd0}{\box0}%
+	\endgroup%
+}
+
+
+\newcommand{\cvsect}[1]{% The only parameter is the section text
+	\vspace{\baselineskip} % Whitespace before the section title
+	\colorbox{black}{\textcolor{white}{\MakeUppercase{\textbf{#1}}}}\\% Section title
+}
+\newcommand{\blackboxed}[1]{%
+\colorbox{black}{\textcolor{white}{\textbf{#1}}}%
+}
+
+\newcommand{\icon}[3]{% The first parameter is the FontAwesome icon name, the second is the box size and the third is the text
+	\vcenteredhbox{\colorbox{black}{\makebox(#2, #2){\textcolor{white}{\large\csname fa#1\endcsname}}}}% Icon and box
+	\hspace{0.2cm}% Whitespace
+	\vcenteredhbox{\textcolor{black}{#3}}% Text
+}
+
+
+%%%%%%%% VARIANTES COLOREES	%%%%%%%%%%%%
+
+
+\newcommand{\redboxed}[1]{%
+\colorbox{flatuicolors_tomato}{\textcolor{white}{\textbf{#1}}}%
+}
+
+\newcommand{\greenboxed}[1]{%
+\colorbox{flatuicolors_green}{\textcolor{white}{\textbf{#1}}}%
+}
+
+\newcommand{\blueboxed}[1]{%
+\colorbox{flatuicolors_blue_devil}{\textcolor{white}{\textbf{#1}}}%
+}
+
+\newcommand{\purpleboxed}[1]{%
+\colorbox{flatuicolors_purple_dark}{\textcolor{white}{\textbf{#1}}}%
+}
+
+\newcommand{\orangeboxed}[1]{%
+\colorbox{flatuicolors_orange}{\textcolor{white}{\textbf{#1}}}%
+}
+
+\newcommand{\aquaboxed}[1]{%
+\colorbox{flatuicolors_aqua}{\textcolor{white}{\textbf{#1}}}%
+}
