@@ -23,8 +23,22 @@ import plotly.express as plx
 from plotly.subplots import make_subplots
 import plotly.graph_objects as plgo
 
+#? BenchmarkGraph = Optional[List[ List[int]   | List[float] ]]
+#                                  iterations  |   erreur relative à composante k ∈ ⟦1,len(θₜ)⟧
+#    index :                       0           |   1, ... , n = len(θₜ)
+#    passe mieux pour le type hinting même si le vrai est plutôt en haut
+BenchmarkGraph = Optional[List[ List[float] ]]
 
-def initialisation(q, ɛ, θ_0, N, 𝛾, η_0, benchmark) -> Tuple[float, NDArray, float, list[float],DistributionFamily, list[list[float]] | None, list[bool]]:
+ParamsInitiaux = Tuple[ float,                  # η_t
+                        NDArray,                # θ_t
+                        float,                  # norm_grad_L
+                        List[float],            # X
+                        DistributionFamily,     # q_0
+                        BenchmarkGraph,         # benchmark_graph
+                        List[bool]              # state
+                      ]
+
+def initialisation(q : DistributionFamily, ɛ : float, θ_0 : Optional[NDArray], N : int, 𝛾 : float, η_0 : float, benchmark : bool) -> ParamsInitiaux:
     """initialisationdes paramètres pour la SGA de la fonction L
     
     
@@ -103,7 +117,7 @@ def initialisation(q, ɛ, θ_0, N, 𝛾, η_0, benchmark) -> Tuple[float, NDArra
 
 
 
-def update_η(η_t):
+def update_η(η_t : float) -> float:
     η_t_plus_1 = η_t
     return η_t_plus_1
 
@@ -171,27 +185,59 @@ def compute_grad_L_estimator(f_target : DistributionFamily,
 
 
 
+def show_error_graph(last_θ_t : NDArray, θ_target : NDArray, θ_init : NDArray, benchmark_graph : BenchmarkGraph) -> None:
+    if benchmark_graph is None :
+        raise TypeError("the benchmark_graph should not be None")
+    
+    n = len(last_θ_t)
+    
+    fig = make_subplots(
+                        rows= n//2 + n%2 , cols=2,
+                        subplot_titles= [ r"$\text{erreur relative : }" + "\\left| \\frac{" "θ_" + f"{k}" + "- θ^*_"f"{k}" +"}" + "{θ^*" + f"_{k}" + "}"  +"\\right|" "$" for k in range(n)]
+                )
+    
+    axis_range_dict = {}
+    
+    for k in range(n):
+        print(f"({1 + k//2}, {1 + k%2})")
+        fig.add_trace(plgo.Scatter(x=benchmark_graph[0] , y=benchmark_graph[1+k]), row = 1 + k//2 , col = 1 + k%2)
+        y_max = max(benchmark_graph[1+k])
+        axis_range_dict[f"yaxis{k+1}"] = dict(range=[0, 1.1 * y_max])
+    
+    fig.update_xaxes(title_text='iteration')
+    fig.update_yaxes(title_text='Relative error to target parameter')
+    
+    
+    
+    fig.update_layout(title=f"θ_target = {[round(composante, 2) for composante in θ_target]}      θ_init = {[round(composante, 2) for composante in θ_init]}",
+    **axis_range_dict)
+    fig.show()
+
+
+
+
+
 def sga_kullback_leibler_likelihood(
-     f_target : DistributionFamily ,
-     q_init : DistributionFamily , 
-     nb_drawn_samples : int, 
-     nb_stochastic_choice : int, 
-     step : float, 
-     θ_0 : Optional[ArrayLike] = None, 
-     ɛ : float = 1e-6, 
-     iter_limit = 100, 
-     benchmark : bool = False, 
-     max_L_gradient_norm : int = 10,
-     adaptive : bool = False
-) -> NDArray:
+                                        f_target : DistributionFamily ,
+                                        q_init : DistributionFamily , 
+                                        nb_drawn_samples : int, 
+                                        nb_stochastic_choice : int, 
+                                        step : float, 
+                                        θ_0 : Optional[NDArray] = None, 
+                                        ɛ : float = 1e-6, 
+                                        iter_limit = 100, 
+                                        benchmark : bool = False, 
+                                        max_L_gradient_norm : int | float = np.Infinity,
+                                        adaptive : bool = False
+                                    ) -> NDArray:
     """effectue une stochastic gradient ascent pour le problème d'optimisation de θ suivant le critère de la vraissemblance de Kullback-Leibler
         
-    f                               — target density
+    f_target                        — target density
                                         ➤ va être utilisée pour la comparaison avec q dans la maximisation de la vraissemblance de Kullback-Leibler
                                         
                                         L(θ) = - KL( f || q )
     
-    q                               — original sampling policy : q(𝑥, θ)
+    q_init                          — original sampling policy : q(𝑥, θ)
     
                                                         parametric family of sampling policies / distributions
                                                         given as a (lambda) function of 𝑥, θ ∈ 𝘟 × Θ
@@ -212,20 +258,29 @@ def sga_kullback_leibler_likelihood(
     
     ɛ                               — threshold pour la norme du gradient
     
-    iter_limit                      - nombre d'itérations max du gradient descent avant l'arrêt
+    iter_limit                      — nombre d'itérations max du gradient descent avant l'arrêt
 
-    benchmark                       - if True, produces error graphs
+    benchmark                       — if True, produces error graphs
     
-    max_L_gradient_norm             - safety coefficient : if ‖ 𝛁L ‖ > 𝜶 ‖ θ_t ‖
+    max_L_gradient_norm             — safety coefficient : if ‖ 𝛁L ‖ > 𝜶 ‖ θ_t ‖
                                         ↪ we use 𝜶 × (𝛁L / ‖ 𝛁L ‖)
+                                        ↪ Default : unbound         [ np.Infinity ]
+                                        
+    adaptive                        — sample X = (𝑥ᵢ)₁,ₙ
+                                            ↪ à partir de q_init    [ False ]
+                                            
+                                            ↪ à partir de qₜ        [ True  ]
+                                            
     """
     
     η_t, θ_t, norm_grad_L, X, q, benchmark_graph, state = initialisation(q_init, ɛ, θ_0, nb_drawn_samples, nb_stochastic_choice, step, benchmark)
     # useful for computing error
     if benchmark_graph is not None :
         target : NDArray = f_target.parameters_list()
+        theta_init = deepcopy(θ_t)
     else :
         target = np.array([])
+        theta_init = np.array([])
     
     # new_samples = []
     if not adaptive :
@@ -305,17 +360,9 @@ def sga_kullback_leibler_likelihood(
         
     # à la fin on plot le graphe des erreurs
     if benchmark_graph is not None :
-        fig = make_subplots(
-                            rows= len(θ_t)//2 + len(θ_t)%2 , cols=2,
-                            subplot_titles= [ r"$\text{erreur relative : }" + "\\left| \\frac{" "θ_" + f"{k}" + "- θ^*_"f"{k}" +"}" + "{θ^*" + f"_{k}" + "}"  +"\\right|" "$" for k in range(len(θ_t))]
-                    )
-        for k in range(len(θ_t)):
-            print(f"({1 + k//2}, {1 + k%2})")
-            fig.add_trace(plgo.Scatter(x=benchmark_graph[0] , y=benchmark_graph[1+k]), row = 1 + k//2 , col = 1 + k%2)
-        fig.show()
-        
+        show_error_graph(last_θ_t = θ_t, 
+                         θ_target = target, 
+                         θ_init = theta_init,
+                         benchmark_graph = benchmark_graph)        
     return θ_t
-
-
-
 

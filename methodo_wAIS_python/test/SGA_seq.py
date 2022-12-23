@@ -14,7 +14,6 @@ def mean_seq(
     μ_inital: Optional[float] = None, 
     θ_initial: Optional[float] = None
     ):
-
     # si il y a un None
     if all([elem is None for elem in [μ_target, θ_target, μ_inital, θ_initial]]) :
         μ_target : float = magnitude * (0.5 - np.random.rand())
