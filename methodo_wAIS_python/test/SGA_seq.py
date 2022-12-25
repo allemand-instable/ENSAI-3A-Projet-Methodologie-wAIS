@@ -47,7 +47,7 @@ def mean_seq(
         step=eta_0,
         iter_limit = max_iter,
         benchmark=True,
-        # max_L_gradient_norm=10,
+        max_L_gradient_norm=50,
         adaptive=adaptive
     )
 

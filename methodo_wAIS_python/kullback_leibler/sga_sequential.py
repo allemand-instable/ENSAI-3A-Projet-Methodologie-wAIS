@@ -139,18 +139,119 @@ def cond_n_de_suite__update_state(cond, state : list[bool]) -> list[bool]:
     return new_state
 
 
+"""SOMEWHAT WORKED ON GAUSSIAN EXAMPLES (better than AIS) BUT MATHEMATICALLY INCORRECT : COMMENTING IT OUT"""
+# def compute_grad_L_estimator(f_target : DistributionFamily, 
+#                              q : DistributionFamily, 
+#                              θ_t : NDArray, 
+#                              nb_stochastic_choice : int,
+#                              max_L_gradient_norm : int | float, 
+#                              X_sampled_from_uniform : List[float]
+#                              ) -> NDArray:
+#     """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling"""
+#     def ω(x,θ) -> float:
+#         f_val = f_target.density(x)
+#         q_val = q.density_fcn(x, θ)
+#         res = f_val/q_val
+#         # debug(logstr(f"ω(x,θ) = {res}"))
+#         return res
+#     # ⟶ scalaire
 
-def compute_grad_L_estimator(f_target : DistributionFamily, 
-                             q : DistributionFamily, 
+#     def h(x,θ) -> NDArray:
+#         # x ⟼ log qₜ(x)
+#         def log_q(u, theta) -> float :
+#             return np.log(q.density_fcn(u, theta)) 
+#         # [𝛁_θ]log qₜ(x)
+#         res = gradient_selon(2, log_q, *[x, θ] )
+#         # debug(logstr(f"h(x,θ) = {get_vector_str(res)}"))
+#         return res
+#     # ⟶ vecteur
+    
+#     def grad_L(x_i, θ) -> NDArray:
+#         res = h(x_i, θ) * ω(x_i, θ) #@ #res = h(x_i, θ) * ω(x_i, θ_0 )            
+#         norm_res = np.linalg.norm(res)
+#         norm_theta = np.linalg.norm(np.array(θ))
+#         # avec les ω, si on a un ω ~ 10 000 lorsque q << f 
+#         # on va avoir la norme de la direction qui explose
+#         # on essaye d'éviter cela
+#         if norm_res > max_L_gradient_norm * norm_theta :
+#             debug(logstr(f"{norm_res} = || res || > {max_L_gradient_norm} x || θ || = {max_L_gradient_norm*norm_theta}\n\nreturning zeros..."))
+#             # norm_max * 𝛁L/‖𝛁L‖
+#             return max_L_gradient_norm * (res/norm_res)
+#         return res
+#     # ⟶ vecteur
+
+#     grad_L_list : list[NDArray] = [ grad_L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(nb_stochastic_choice) ]
+    
+#     grad_L_estimator : NDArray = np.add.reduce( grad_L_list )/nb_stochastic_choice
+    
+#     return grad_L_estimator
+
+
+def compute_grad_L_estimator_adaptive(  f_target : DistributionFamily, 
+                                        q_t : DistributionFamily, 
+                                        θ_t : NDArray, 
+                                        nb_stochastic_choice : int,
+                                        max_L_gradient_norm : int | float, 
+                                        X_sampled_from_uniform : List[float]
+                             ) -> NDArray:
+    """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling avec un q adaptatif
+    
+    ω_θ = f / q_θ
+    on a donc ̂𝛁L = 1/n⋅∑ [𝛁_θ]( ω_θ × log(q_θ) )[X_i]
+    """
+    def ω(x,θ) -> float:
+        f_val = f_target.density(x)
+        q_val = q_t.density_fcn(x, θ)
+        res = f_val/q_val
+        # debug(logstr(f"ω(x,θ) = {res}"))
+        return res
+    # ⟶ scalaire
+
+    def grad_L(x_i, θ) -> NDArray:
+        
+        def log_q(u, theta) -> float :
+            return np.log(q_t.density_fcn(u, theta)) 
+        
+        fcn = lambda x, theta : ω(x, theta) * log_q(x, theta)
+        res = gradient_selon(2, fcn, *[x_i, θ])
+        
+        norm_res = np.linalg.norm(res)
+        norm_theta = np.linalg.norm(np.array(θ))
+        # avec les ω, si on a un ω ~ 10 000 lorsque q << f 
+        # on va avoir la norme de la direction qui explose
+        # on essaye d'éviter cela
+        if norm_res > max_L_gradient_norm * norm_theta :
+            debug(logstr(f"{norm_res} = || res || > {max_L_gradient_norm} x || θ || = {max_L_gradient_norm*norm_theta}\n\nreturning zeros..."))
+            # norm_max * 𝛁L/‖𝛁L‖
+            return max_L_gradient_norm * (res/norm_res)
+        return res
+    # ⟶ vecteur
+
+    grad_L_list : list[NDArray] = [ grad_L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(nb_stochastic_choice) ]
+    
+    grad_L_estimator : NDArray = np.add.reduce( grad_L_list )/nb_stochastic_choice
+    
+    return grad_L_estimator
+
+
+
+def compute_grad_L_estimator_importance_sampling(f_target : DistributionFamily, 
+                             q_t : DistributionFamily, 
+                             q_importance_sampling : DistributionFamily,
                              θ_t : NDArray, 
                              nb_stochastic_choice : int,
                              max_L_gradient_norm : int | float, 
                              X_sampled_from_uniform : List[float]
                              ) -> NDArray:
-    """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling"""
+    """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling
+    
+    ω = f / q_importance_sampling
+    
+    on a donc 𝛁̂L = 1/n⋅∑ [𝛁_θ]( ω × log(q_θ) )[X_i]
+                 = 1/n⋅∑  ω[X_i] × [𝛁_θ]log(q_θ)[X_i]"""
     def ω(x,θ) -> float:
         f_val = f_target.density(x)
-        q_val = q.density_fcn(x, θ)
+        q_val = q_importance_sampling.density_fcn(x, θ)
         res = f_val/q_val
         # debug(logstr(f"ω(x,θ) = {res}"))
         return res
@@ -159,7 +260,7 @@ def compute_grad_L_estimator(f_target : DistributionFamily,
     def h(x,θ) -> NDArray:
         # x ⟼ log qₜ(x)
         def log_q(u, theta) -> float :
-            return np.log(q.density_fcn(u, theta)) 
+            return np.log(q_t.density_fcn(u, theta)) 
         # [𝛁_θ]log qₜ(x)
         res = gradient_selon(2, log_q, *[x, θ] )
         # debug(logstr(f"h(x,θ) = {get_vector_str(res)}"))
@@ -175,7 +276,7 @@ def compute_grad_L_estimator(f_target : DistributionFamily,
         # on essaye d'éviter cela
         if norm_res > max_L_gradient_norm * norm_theta :
             debug(logstr(f"{norm_res} = || res || > {max_L_gradient_norm} x || θ || = {max_L_gradient_norm*norm_theta}\n\nreturning zeros..."))
-            # return np.zeros(θ.shape)
+            # norm_max * 𝛁L/‖𝛁L‖
             return max_L_gradient_norm * (res/norm_res)
         return res
     # ⟶ vecteur
@@ -185,6 +286,8 @@ def compute_grad_L_estimator(f_target : DistributionFamily,
     grad_L_estimator : NDArray = np.add.reduce( grad_L_list )/nb_stochastic_choice
     
     return grad_L_estimator
+
+
 
 
 
@@ -323,13 +426,13 @@ def sga_kullback_leibler_likelihood(
         
         # 𝛁L
         if adaptive :
-            grad_L_estimator = compute_grad_L_estimator(f_target, q, 
+            grad_L_estimator = compute_grad_L_estimator_adaptive(f_target, q, 
                                                         θ_t, 
                                                         nb_stochastic_choice,
                                                         max_L_gradient_norm, 
                                                         X_sampled_from_uniform)
         else :
-            grad_L_estimator = compute_grad_L_estimator(f_target, q_init, 
+            grad_L_estimator = compute_grad_L_estimator_importance_sampling(f_target, q, q_init,
                                                         θ_t, 
                                                         nb_stochastic_choice,
                                                         max_L_gradient_norm, 

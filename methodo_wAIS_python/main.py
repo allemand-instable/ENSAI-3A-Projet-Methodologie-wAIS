@@ -5,7 +5,7 @@ import yaml
 from pprint import pprint
 from utils.log import logstr
 from logging import info, debug, warn, error
-
+from platform import system
 
 import run_test
 
@@ -13,7 +13,10 @@ import os
 
 
 if __name__ == "__main__" :
-    os.system("clear")
+    if system() == "Windows" :
+        os.system("cls")
+    else :
+        os.system("clear")
     
     open('log/debug.log', 'w').close()
     open('log/info.log', 'w').close()
