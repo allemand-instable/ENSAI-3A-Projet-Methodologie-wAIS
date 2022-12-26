@@ -1,0 +1,40 @@
+Using Importance Sampling according to the distribution $q_0$
+
+$$
+\begin{array}{rcl}
+\widehat{\nabla L}(\theta) 
+&\approx& 
+\frac 1 N \displaystyle\sum\limits_{i = 1}^N \left( \nabla_\theta \ \log q_\theta (X_i) \times \frac{f(X_i)}{q_0(X_i)}\right)
+\\
+&=& \frac 1 N \displaystyle\sum_{i = 1}^N \omega(X_i) \times h_\theta(X_i)
+\end{array}
+$$
+
+with:
+
+\faAngleRight \ $\omega : x \mapsto \frac{f(x)}{q_0(x)}$
+
+\faAngleRight \ $h_\theta : x \mapsto \nabla_\theta \ \log q_\theta(x)$
+
+We can therefore use the following algorithm to compute the gradient ascent toward the optimal parameter $\theta^*$
+
+\begin{algorithm}[H]
+\caption{Gradient Ascent - IS}\label{alg:gaIS}
+\begin{algorithmic}
+    \Require 
+    \\ \ra Initiate $\theta_0 \in \mathbb R^p$ 
+    \\ \ra Initiate $\eta_0$ (or $\eta$ for a fixed step size) 
+    \\ \ra choose a sampling distribution $q_0$
+    \\ \ra choose a small value of $\varepsilon$ ( i.e $\varepsilon \rightarrow 0 $)
+    \\ \ra choose a number of maximum iterations : max.iter
+    \State Sample $X = \famfinie X 1 N$ from distribution $q_0$ 
+    \For{$t \in \llbracket 1, \max.iter \rrbracket$}
+        \If {$\Vert \nabla f \Vert < \varepsilon$}
+            \State Break the loop
+        \EndIf
+        \State \ra compute $\widehat{\nabla_\theta L}(\theta_t) = \displaystyle\sum\limits_i\omega(X_i) h_\theta(X_i)$
+        \State \ra $\underbracket[1pt][5pt]{\theta_{[t]} \gets}_{\theta_{t+1} = } \theta_{[t]} + \eta \nabla L(\theta_t)$
+        \State \ra update $\eta$ such that $f(x_{t+1}) > f(x_t)$ 
+    \EndFor  
+\end{algorithmic}
+\end{algorithm}

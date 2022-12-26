@@ -1,0 +1,48 @@
+It makes sense to use the distribution which is the closet to the one we are interested in at each step. That's why we can also use and "adaptive" algorithm where at each step we sample new observation from the latest distribution $q_t$. By using this method, one might be careful about the expression of the gradient of the likelihood function. Indeed, as $\omega$ will be a function of $\theta$ we either need to apply the product rule or compute numerically the gradient of $(\frac {f}{q_t} \times \log q_t)$.
+
+This leads to the following algorithm :
+
+
+\begin{algorithm}[H]
+    \caption{Gradient Ascent - Adaptive}\label{alg:gaAdaptive}
+    \begin{algorithmic}
+        \Require 
+        \\ \ra Initiate $\theta_0 \in \mathbb R^p$ 
+        \\ \ra Initiate $\eta_0$ (or $\eta$ for a fixed step size) 
+        \\ \ra Initiate the sampling distribution $q_0$
+        \\ \ra choose a small value of $\varepsilon$ ( i.e $\varepsilon \rightarrow 0 $)
+        \\ \ra choose a number of maximum iterations : max.iter
+        \For{$t \in \llbracket 1, \max.iter \rrbracket$}
+        \If {$\Vert \nabla f \Vert < \varepsilon$}
+        \State Break the loop
+        \EndIf
+
+            \smallskip
+
+            \State \ra Sample $N_t$ from distribution $q_t$ 
+            
+            \bigskip
+            
+            \State \ra compute 
+            
+            $$\widehat{\nabla_\theta L}(\theta_t) = \displaystyle\sum\limits_{i=1}^{N} \nabla_\theta \left[\omega_\theta(X_i) h_\theta(X_i)\right]$$ 
+            
+
+            $$\begin{array}{l}
+                {N = \sum N_t}
+                \\
+                {\omega_\theta : x \mapsto \frac{f(x)}{q_t(x)}}
+                \\
+                {h_\theta : x \mapsto \log q_t(x)}
+            \end{array}$$
+            
+            \bigskip
+
+            \State \ra $\underbracket[1pt][5pt]{\theta_{[t]} \gets}_{\theta_{t+1} = } \theta_{[t]} + \eta \nabla L(\theta_t)$
+            \State \ra update $\eta$ such that $f(x_{t+1}) > f(x_t)$ 
+            \State \ra Update $q_t$ with the recently computed parameter
+        \EndFor  
+    
+    \Return $\theta_{max.iter}$
+    \end{algorithmic}
+    \end{algorithm}

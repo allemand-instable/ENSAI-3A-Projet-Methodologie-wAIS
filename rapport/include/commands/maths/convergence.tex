@@ -1,6 +1,8 @@
 %%  notation convergence
-\newcommand{\cvl}{\overset {\mathcal L} \longrightarrow}
-\newcommand{\cvp}{\overset {\mathbb P} \longrightarrow}
-\newcommand{\cvps}{\overset {\textsf{p.s}} \longrightarrow}
-\newcommand{\cvL}[1]{\overset {\mathbb L ^{#1}} \longrightarrow}
-\newcommand{\cvetr}{\overset {\textsf{étroit.}} \longrightarrow}
+% uses mathtools package
+\newcommand{\cvl}[1]{\wrightarrow[#1]{\ \mathcal L \ } \ }
+\newcommand{\cvp}[1]{\xrightarrow[#1]{\ \mathbb P \ } }
+\newcommand{\cvps}[1]{\xrightarrow[#1]{\ \textsf{p.s}\ } \ }
+\newcommand{\cvL}[2]{\xrightarrow[#2]{\ \mathbb L ^{#1} \ }}
+\newcommand{\cvetr}[1]{\xrightarrow[#1]{ \ \textsf{étroit.} \ }}
+\newcommand{\cvnorme}[2]{\xrightarrow[\, #2 \; ]{\, \lVert \cdot \rVert _{#1} \,} \ }

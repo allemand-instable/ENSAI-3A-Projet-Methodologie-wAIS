@@ -1,0 +1,36 @@
+\subsection{Other divergence measures}
+
+\subsubsection{Rényi's Alpha Divergence}
+
+$$
+R_\alpha(p \Vert q) = \frac 1 {\alpha - 1} \log \esperanceloi q { \left( \frac {p(X)} {q(X)} \right)^\alpha }
+$$
+
+
+
+\subsubsection{Amari's Alpha Divergence}
+
+$$
+\begin{array}{lcl}
+A_\alpha( p \Vert q ) &=& \frac{1}{\alpha( \alpha - 1 )} \left[ \int p^\alpha q^{1 - \alpha} d\lambda \ -1 \right]  
+\\
+&=& \frac{1}{\alpha( \alpha - 1 )} \left( \esperanceloi q { \left( \frac {p(X)} {q(X)} \right)^\alpha } - 1\right)
+\end{array}
+$$
+
+we can use ideas from importance smapling to derive the following expression :
+
+
+\[
+\begin{array}{lcl}
+
+A_\alpha( p \Vert q ) &=& \frac{1}{\alpha( \alpha - 1 )} \left( \esperanceloi q { \left( \frac {p(X)} {q(X)} \right)^\alpha } - 1\right)
+
+\\ 
+&=&  \frac{1}{\alpha( \alpha - 1 )} \left( \esperanceloi {q_0} { \left( \frac {p(X)} {q(X)} \right)^\alpha  \left( \frac{q(X)}{q_0(X)} \right) } - 1\right)
+\\
+\end{array}
+\]
+
+
+et on a $$A_\alpha( p \Vert q_\theta ) = \frac {\esperanceloi {q_0} { \omega(X \vert \theta) \cdot d_\alpha(p \Vert q_\theta )(X) } - 1 }{\alpha ( \alpha - 1 )}$$

@@ -1,0 +1,45 @@
+We derived the form of the integral of the respective criterion. This next section will discuss the stochastic gradient descent algorthm. We recall the classic gradient descent. Here, it is presented as gradient ascent as we are looking for the maximum of our function of interest. 
+
+\bigskip
+
+The goal is to find the maximum of $L$.
+
+$$dL(\theta_{max}) = 0$$
+
+$$d_xL(h) = \left< \ \nabla L(x) \ | \ h \ \right>$$
+
+$$L(x) \approx L(x_0) + d_{x_0}L(x - x_0)$$
+
+
+$$
+\begin{array}{rcl}
+\argmax\limits_x L(x) &\approx& \argmax\limits_{x} \left[ \ L(x_0) + d_{x_0}L(h_x) \ \right]
+\\
+& = &
+\argmax\limits_{h_x} \left[ d_{x_0}L(h_x) \ \right]
+\\
+& = &
+\argmax\limits_{h_x} \left< \ \nabla L(x) \ | \ h_x \ \right>
+\end{array}
+$$
+
+
+What is the direction $h_x$ which maximises $L$?
+
+$$\underset{||h_x|| = 1}{\operatorname{max}} \left< \ \frac{\nabla L(x)}{|| \nabla L(x) ||} \ | \ h_x \ \right> = 1$$
+
+and so:
+
+$$\underset{||h_x|| = 1}{\operatorname{argmin}} \left< \ {\nabla L(x)} \ | \ h_x \ \right> = {+} \frac{\nabla L(x)}{|| \nabla L(x) ||}$$
+
+the direction of greatest ascent is given by
+
+$$h = + \frac{\nabla L(x)}{|| \nabla L(x) ||}$$.
+
+\bigskip
+
+Therefore, we can iterate from a starting paramater $\theta_0$ and gradually approach to the maximum value of $L$ located at $\theta_{max}$ :
+
+\bigskip
+
+$$\boxed{\theta_{t+1} \leftarrow \theta_t + \gamma \underbracket{ \widehat{\nabla_\theta L}(\theta_t)}_{\frac 1 N \displaystyle\sum_{i = 1}^N \nabla_\theta \left[\omega_{\theta_t}(X_i) \times h_{\theta_t}(X_i)\right]}}$$

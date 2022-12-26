@@ -1,0 +1,30 @@
+\subsubsection{Testing the distribution convergence}
+
+In this section we are going to the test how the stochastic gradient descent algorithm based on the Kullback-Leibler criterion performs. Thus, we are looking to compute 
+$$\hat{\theta} = argmax_{\theta} \frac 1 N \displaystyle\sum_{i = 1}^N \omega_\theta(X_i) \times h_\theta(X_i)$$
+
+\faAngleRight \ $\omega_\theta : x \mapsto \frac{f(x)}{q_\theta(x)}$
+
+\faAngleRight \ $h_\theta : x \mapsto \nabla_\theta \ \log q_\theta(x)$
+
+The target distribution $f$ belongs the class of univariate normal distributions, where $f$ is $N$, $\mu = , \sigma^2 = $. The proposal distribution $q_0$ equally belongs to the collection of univariate normal distributions. A highly rigid surface and many local minima make it a rather tricky endeavor to optimize the Kullback-Leibler Divergence in the given scenerario. Hence, we consider various parametrizations of $q_0$.
+Both, $mu$ and $sigma$ are updated iteratively. 
+Other parameters were fixed at the following values:
+\begin{enumerate}
+    \item Total sample size $N_T = $
+    \item batch size $n_t = $
+    \item 
+\end{enumerate} 
+
+Insert pictures and descriptions of behaviour. 
+
+Other parameters were fixed at the following values:
+\begin{enumerate}
+    \item Total sample size $N_T = $
+    \item batch size $n_t = $
+    \item 
+\end{enumerate} 
+-
+-
+-
+We did a first assessment of the data using 

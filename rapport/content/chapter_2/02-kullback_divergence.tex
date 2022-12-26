@@ -1,0 +1,144 @@
+\subsection{Kullback-Leibler Divergence}
+ 
+The first algorithm employs the Kullback-Leibler Loss. 
+
+To apply stochastic gradient descent we require the gradient of our optimization criterion. The Kullback-Leibler divergence is defined as
+$$D_{KL}(f\|q) = \displaystyle \int \log \frac{f}{q_{\theta}} f d\lambda$$
+
+The minimization problem of the Kullback-Leibler divergence between the approximating and target distribution can be easily reformulated as maximization of the negative Kullback-Leibler divergence. It follows 
+$$argmin_\theta D_{KL}(f\|q_{\theta}) = argmax_\theta -D_{KL}(f\|q_{\theta}) $$
+and 
+$$ -D_{KL}(f\|q_{\theta}) = L(\theta) = \displaystyle \int \log \frac{q_\theta}{f} f d \lambda$$.
+
+\bigskip
+One advantage of using the Kullback-Leibler likelihood function as criterion is that its minimizer remains unchanged by multiplicative constants. This is relevant if the target distributions is only known up to a proportional constant. In that scenario, the absence of the normalization constant does not change the maximization problem.
+
+$$L_{c f}(\theta) = c \times L_f(\theta) - \log c$$
+
+from which we deduce that 
+
+$$\operatorname{argmin}\limits_\theta L_{cf}(\theta) = \operatorname{argmin}\limits_\theta L_{f}(\theta)$$.
+
+\bigskip
+
+Optimization is done with respect to $\theta$. Hence, we single out the relevant parts dependent on $\theta$. 
+
+$$
+\begin{array}{lcl}
+L(\theta) &=& \displaystyle \int \log \frac{q_\theta}{f} f d \lambda
+\\
+&=& \displaystyle\int\left[ \ \left(f \times \log q_\theta\right) - \left( f \times \log f \right) \ \right] d\lambda
+\\
+&=& \displaystyle\int \ \left(f \times \log q_\theta\right) d\lambda - \underbrace{\displaystyle\int \left( f \times \log f \right) d\lambda}_{\textsf{independent of } \theta}
+\end{array}
+$$
+
+\bigskip
+
+We end up with:
+
+
+$$
+\begin{array}{lcl}
+\nabla L(\theta) &=& \nabla \displaystyle\int f(u) \log q_\theta(u) du
+\\
+\end{array}
+$$
+
+\bigskip
+
+We seek to invert the integral and derivation operator. To do so, we check whether the conditions for derivation under the integral sign apply:
+
+
+$$
+f : \begin{array}{ccc}
+E\times I&\mapsto& \mathbb R
+\\
+(x,t) &\mapsto& f(x,t)
+\end{array}
+$$
+
+
+
+
+
+\begin{itemize}
+    \item Existence :
+        $(\forall t \in I) \ \ x \mapsto f(x,t) \in \mathbb L^1(E)$
+    \item Derivability : 
+        $(\underset{\mu}{\forall} x \in E) t \mapsto f(x,t) \in D^1(I)$
+    \item Dominated Convergence : $\exists \varphi : E \mapsto \mathbb R_+ \in m(E), 
+\ \int \varphi d\mu  < \infty$
+
+such that $(\forall t \in I)(\underset \mu \forall x \in E) \ \ \left|\frac{\partial f}{\partial t}(x,t)\right| \leq \varphi(x)$
+\end{itemize}
+
+\bigskip
+
+
+In our case we are working with $g(u, \theta) = f(u) \log\left[ \ q(u, \theta) \ \right]$
+
+\bigskip
+
+One should verify the hypotheses :
+
+\bigskip
+
+\begin{itemize}
+    \item \textbf{existence} : $u \mapsto g(u, \theta) \in \mathds L^1(\Omega)$  
+
+    \item \textbf{derivability} : we consider 
+    
+    $\nabla_\theta g(u, \theta) = \begin{bmatrix} \frac{\partial g}{\partial \theta_1}(u, \theta) \\ \vdots \\ \frac{\partial g}{\partial \theta_p}(u, \theta) \end{bmatrix}$
+
+    \bigskip
+    
+    Therefore we can swap derivative andexpectation if $\theta \mapsto g(u,\theta)$ is differentiable for almost all $u$
+
+    \item \textbf{dominated convergence} : One must find a function $\phi$ such that $\forall \theta_i$ with $i = 1, ..., p$ $g(u,\theta)$ is dominated by $\phi$. Given f and q are densities, they are both bounded which should make finding $\phi$ not an issue.
+    
+\end{itemize}
+
+\bigskip
+
+Interchanging the integral and derivation operator, we receive the following expression: 
+$$
+\begin{array}{rcl}
+\nabla L(\theta) &=& \displaystyle\int \nabla_\theta \ g(u, \theta) du
+\\
+&=& \displaystyle\int \nabla_\theta \ \left[ f(u) \times \log q(u, \theta) \right] du
+\\
+&=& \displaystyle\int \left[f(u) \times \nabla_\theta \ \log q(u, \theta) \right] du
+\end{array}
+$$
+
+
+
+With the expression of the gradient being clear, we wish to find an unbiased stochastic version of the integral. We combine the gradient with notions from random generation and importance sampling. 
+
+We introduce the sampling distribution $q_{\theta}$ and express our gradient in terms of importance sampling. 
+$$
+\begin{array}{rcl}
+\nabla L(\theta) &=& \displaystyle\int \left[f(u) \times \nabla_\theta \ \log q(u, \theta) \right] du
+\\
+&=& \displaystyle\int \nabla_\theta \ \log q(u, \theta) \times \frac{f(u)}{q_\theta(u)} \times q_\theta(u)du
+\\
+&=& \mathbb E_{q_\theta}\left[ \nabla_\theta \log q_\theta(X) \times \frac{f(X)}{q_\theta(X)} \right]
+\end{array}
+$$
+
+The resulting estimator is given by:
+
+$$
+\begin{array}{rcl}
+\widehat{\nabla L}(\theta) 
+&\approx& 
+\frac 1 N \displaystyle\sum\limits_{i = 1}^N \left( \nabla_\theta \ \log q_\theta (X_i) \times \frac{f(X_i)}{q_\theta(X_i)}\right)
+\\
+&=& \frac 1 N \displaystyle\sum_{i = 1}^N \omega_\theta(X_i) \times h_\theta(X_i)
+\end{array}
+$$
+
+with:
+- $\omega_\theta : x \mapsto \frac{f(x)}{q_\theta(x)}$
+- $h_\theta : x \mapsto \nabla_\theta \ \log q_\theta(x)$

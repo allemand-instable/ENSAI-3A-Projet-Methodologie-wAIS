@@ -1,5 +1,5 @@
 import numpy as np
-from kullback_leibler.sga_sequential import sga_kullback_leibler_likelihood
+from kullback_leibler.sga_sequential import compare_sga_methods, sga_kullback_leibler_likelihood
 from typing import Optional
 from distribution_family.normal_family import NormalFamily
 
@@ -39,19 +39,21 @@ def mean_seq(
     eta_0 = step
     
     # res = SGA_L(f=target_f, q=intial_q, N=N, γ = u, η_0 = eta_0, iter_limit=max_iter, benchmark=True)   
-    res = sga_kullback_leibler_likelihood(
-        f_target=target_f,
-        q_init=intial_q,
-        nb_drawn_samples=N,
-        nb_stochastic_choice=u,
-        step=eta_0,
-        iter_limit = max_iter,
-        benchmark=True,
-        max_L_gradient_norm=50,
-        adaptive=adaptive
-    )
+    # res = sga_kullback_leibler_likelihood(
+    #     f_target=target_f,
+    #     q_init=intial_q,
+    #     nb_drawn_samples=N,
+    #     nb_stochastic_choice=u,
+    #     step=eta_0,
+    #     iter_limit = max_iter,
+    #     benchmark=True,
+    #     max_L_gradient_norm=50,
+    #     adaptive=adaptive
+    # )
 
-    print(f"\n\nres = {res}\n\n\n")
+    # print(f"\n\nres = {res}\n\n\n")
+    
+    compare_sga_methods(f_target=target_f, q_init=intial_q, nb_drawn_samples=N, nb_stochastic_choice=u, step=eta_0, iter_limit=max_iter, max_L_gradient_norm = 50 )
     
     return {"μ_target" : μ_target, 
             "θ_target" : θ_target, 

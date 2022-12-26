@@ -1,0 +1,14 @@
+
+Portier and Deylon's weighted Adaptive Importance sampling is characterized by the following equation:
+
+
+$$q_t \underset {\textsf{notation}} \equiv q_{\theta_t}$$
+
+$$\boxed{
+I_T(\varphi) = \frac 1 {N_T} \displaystyle\sum\limits_{t=1}^T \alpha_{T,t} \displaystyle\sum\limits_{i = 1}^{n_t} \frac {\varphi(x_{t,i})}{q_{t-1}(x_{t,i})}
+}$$ ~\cite{portierdelyonWAIS}
+
+Our project concerns itself with an adequate choice of $q_{t-1}(x_{t, i})$. Notably, $q_{t-1}(x_{t, i})$ is not a fixed value. Rather, in the spirit of the adaptive nature of wAIS, our algorithms are going to iteratively update the sampling policy via a stochastic gradient descent optimization scheme. Precisely, the update is one iteration of the stochastic gradient descent algorithm which yields a cheap and noisy update along the direction of the gradient. 
+
+We consider two different algorithms for determining an adequate choice of q. They differ with respect to the criterion they optimize, however, update the sampling policy in an identical manner as described above using the SGD. 
+The first algorithm is based on the Kullback-Leiber loss function, the second algorithm works with techniques which explore a loss landscape. 

@@ -1,0 +1,58 @@
+\subsection{Normalized Importance Sampling}
+
+As previously hinted, often, the target distribution $f$ from which we wish to sample is only known up to a proportional constant. In that scenario, "naive" importance sampling will yield a biased estimate. Normalized importance sampling provides a solution to that issue as demonstrated by the following: 
+
+$$\mathbb E_f \left[ h_\theta(X) \right]$$
+
+$$f(x) = \frac{\varphi(x)}{K} = \frac{\varphi(x)}{ \int f(u) du}$$
+
+$f$ is the density and $K$ is the normalizaion constant. As K is unknown, one replaces $\omega_\theta$ by $W_\theta(x) = \frac{\varphi(x)}{q_\theta(x)}$. 
+This yields:
+
+$$
+\begin{array}{rcl}
+\mathbb E_{q_\theta}\left[ W_\theta(X) h_\theta(X) \right] &=& \mathbb E_{q_\theta}\left[ \frac{\varphi(X)}{q_\theta(X)} h_\theta(X) \right]
+\\
+&=& \displaystyle\int \frac{\varphi(u)}{q_\theta(u)} h_\theta(u) \times q_\theta(u) du
+\\
+&=& \displaystyle\int \varphi(u) h_\theta(u)du
+\\
+&=& K \displaystyle\int \underbrace{\frac{\varphi(u)} K}_{f(u)} h_\theta(u)du
+\\
+&=& K \times \mathbb E_{f}\left[ h_\theta(X) \right]
+\end{array}$$
+
+The resulting value is proportional to the unknown constant K. We would like to rid ourselves of $K$. Fortunately, the following holds:
+
+$$
+\begin{array}{rcl}
+\mathbb E_{q_\theta}\left[ W_\theta(X) \right] 
+&=& \mathbb E_{q_\theta}\left[ \frac{\varphi(X)}{q_\theta(X)} \right]
+\\
+&=&
+\displaystyle \int \frac{\varphi(u)}{q_\theta(u)} * q_\theta(u) du 
+\\
+&=&
+\displaystyle\int K f(u) du 
+\\
+&=& K \displaystyle\int f(u) du 
+\\
+&=& K
+\end{array}
+$$
+
+The latter is due to $f$ being a density of which the integral equates to 1. Hence, the normalized importance sampling estimator takes the shape: 
+
+$$\nabla L(\theta) \approx \frac{ \frac 1 N \displaystyle\sum_{i=1}^N W_\theta(X_i) h_\theta(X_i)}
+{\frac 1 N \displaystyle\sum_{i=1}^N W_\theta(X_i)}$$
+
+
+with:
+\begin{itemize}
+\item $(X_i)$  sampled according to $q_\theta$
+\item $h_\theta : x \mapsto \nabla_\theta \ \log q_\theta(x)$ 
+\item $f : x \mapsto \varphi(x) / \int f(u)du$
+\item $W_\theta : x \mapsto \varphi(x) / q_\theta(x)$
+\end{itemize}
+
+

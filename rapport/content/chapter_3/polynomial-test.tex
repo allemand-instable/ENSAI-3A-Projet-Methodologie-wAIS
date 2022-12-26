@@ -1,0 +1,27 @@
+
+\subsubsection{Monte Carlo Method for a known Polynomial}
+
+
+We consider a function which has an easy anti-derivative to compute such as :
+
+
+$$P(x) = ax^3 + b x^2 + c x$$
+
+we decompose the function as $f = h \times q $ to compute it using Mote Carlo methods :
+
+$$\displaystyle\int\limits_A^B P(x)dx = \displaystyle\int\limits_A^B \underbrace{\sqrt{2\pi e^{\frac{x^2} 2}}P(x)}_{g} \underbrace{e^{\frac{-x^2} 2}}_{h = \mathcal N(0,1)} \ dx$$
+
+However we know the integral precisely :
+
+$$
+\begin{array}{rcl}
+\displaystyle\int\limits_A^B P(x)dx 
+&=& 
+\left[ \frac a 4  x^4 + \frac b 3  x^3 + \frac c 2  x^2 \right]^B_A \\
+&=& \frac a 4 \left[ B^4 - A^4 \right] + \frac b 3 \left[ B^3 - A^3 \right] 
+\\ & &
+\\ & &+ \frac c 2 \left[ B^2 - A^2 \right]
+\end{array}
+$$
+
+We will first start using a sampling policy $q_0 = \mathcal{N}(\mu_0, \sigma_0)$ and compare the results from the weighted Normalized AIS to the precise evaluation of the integral in order to make sure the algorithm works properly before doing any benchmark.

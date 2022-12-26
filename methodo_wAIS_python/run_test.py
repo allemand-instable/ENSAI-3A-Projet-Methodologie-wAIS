@@ -2,6 +2,7 @@ from gradient.gradient import gradient_selon
 import logging
 import numpy as np
 from pprint import pprint
+from kullback_leibler.sga_sequential import compare_sga_methods
 from utils.log import logstr
 from logging import info, debug, warn, error
 
@@ -42,8 +43,10 @@ def main():
     # print(SGAseq.mean_seq(1,3, 500, 0.1)  )
     
     params = SGAseq.mean_seq(3,13, 500, 0.2)
-    print(SGAseq.mean_seq(3,13, 500, 0.2, adaptive = True, **params) )
+    # print(SGAseq.mean_seq(3,13, 500, 0.2, adaptive = True, **params) )
     params = SGAseq.mean_seq(9,20, 500, 0.2)
-    print(SGAseq.mean_seq(9,20, 500, 0.2, adaptive = True, **params ))
+    # print(SGAseq.mean_seq(9,20, 500, 0.2, adaptive = True, **params ))
     params = SGAseq.mean_seq(20,10, 500, 0.5)
-    print(SGAseq.mean_seq(20,10, 500, 0.5, adaptive=True, **params))
+    # print(SGAseq.mean_seq(20,10, 400, 0.5, adaptive=True, **params))
+    
+    

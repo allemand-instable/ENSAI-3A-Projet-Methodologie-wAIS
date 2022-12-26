@@ -1,6 +1,63 @@
-\chapter{Chapter 1}
-\minitoc%
+\section{Introduction}
 
-\section{A}
-\section{B}
-\section{C}
+
+Do we need an abstract?
+
+
+Weighted adaptive importance sampling, abbreviated wAIS, belongs to the class of Monte Carlo methods. The goal of these techniques is to evaluate an integral of the form: 
+
+$$\displaystyle \int g \, d\mu$$
+
+with g being an integrable function with respect to $\mu$. 
+A well known problem which may occur, is that the data generating process preferably generates values in areas which are not pertinent to the integrand. The resulting estimate suffers from poor variance and may require many samples to yield decent results. Importance sampling resolves this issue by sampling in the important regions of the integrand and subsequently scaling the samples with importance weights. If done correctly, the importance sampling estimate features a lower variance than the standard Monte Carlo estimate. wAIS is a modification of importance sampling, but they share the same goal of variance reduction. 
+
+The rising interest in importance sampling is owed to its great utility in a wide range of applications such as machine learning or computer graphics. To illustrate, computer graphics heavily rely on efficient computation of integrals to lower the time cost of rendering a scene. 
+\newline
+We briefly consider the components of wAIS.
+Importance sampling is characterized by the following equation:
+
+
+
+
+$$ I_f(g) = \displaystyle \int gf d\lambda = \int g \frac f q q d\lambda = \mathbb{E}_q [g w]
+$$
+where 
+\begin{itemize}
+    \item g: $\mathbb R^d \to \mathbb{R}$ such that $\int |g|f < +\infty$
+    \item $w = \frac f q$
+    \item $f$ is a density 
+    \item $q$ is the density which is proposed for sampling
+\end{itemize}
+
+The resulting estimate is $\frac 1 n \displaystyle\sum\limits_{i=1}^n w(X_i) \times g(X_i)$
+which is given by the law of large numbers.
+
+\bigskip
+
+Given a suitable choice of the sampling policy $q$, the importance sampling estimate achieves a lower variance than the standard Monte Carlo estimate. For that to be the case, $q$ must be proportional to $|g|f$, i.e. $q \displaystyle \propto |g|f$. The dependency $|g|f$ proves trickyFinding such $q$ may prove difficult, which motivates (weighted) adaptive importance sampling.
+
+\bigskip
+
+Portier and Deylon's weighted Adaptive Importance sampling is characterized by the following equation:
+
+$$q_t \underset {\textsf{notation}} \equiv q_{\theta_t}$$
+
+$$\boxed{
+I_T(\varphi) = \frac 1 {N_T} \displaystyle\sum\limits_{t=1}^T \alpha_{T,t} \displaystyle\sum\limits_{i = 1}^{n_t} \frac {\varphi(x_{t,i})}{q_{t-1}(x_{t,i})}
+}$$ ~\cite{portierdelyonWAIS}
+
+Instead of struggling to directly fix $q$ optimally, wAIS allows $q$ to approximate the desired sampling distribution in an iterative manner. Hence, the adaptive nature of the algorithm is expressed via the sampling policy $q_{t-1}$. Notice, the subscript which indicates its current state. Overall wAIS iterates $t = 1, 2, ...,T$ times. 
+
+During iteration $t$, $n_t$ samples are generated according to $q_{t-1}$, which are subsequently fed to the algorithm and evaluated. Here, Delyon and Portier (2018) introduce weights, designated by $\alpha_t$. These weights allow the algorithm to forget earlier stages where the quality of drawn samples was poor. The iteration is concluded by an update of $q$ according to a prespecified updating scheme such that $q_{t-1} \gets q_t$. 
+
+\bigskip
+
+Delyon and Portier (2018) employ the generalized methods of moments to update $q$ to demonstrate the asymptotic efficiency of wAIS. Alternatives based around the exact methods of moments with the Student distribution, Kullback-Leibler Divergence or the sampling variance are presented, but not further elaborated on. The goal of this paper centers around examining the asymptotic behaviour of wAIS using the Kullback-Leiber approach and [insert criterion]. 
+
+\bigskip
+
+[insert Structure of the paper] and major results.
+
+
+
+
