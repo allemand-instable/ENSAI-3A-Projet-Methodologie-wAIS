@@ -1,119 +1,24 @@
 import numpy as np
 from copy import deepcopy
-
 # typing
-from typing import Callable, Any, Dict, List, Optional, Tuple, Literal
-from numpy.typing import ArrayLike, NDArray
-
+from typing import Optional, Tuple
+from numpy.typing import NDArray
 # random
 from random import randint
 import numpy.random as nprd
-
+from benchmark.combine_error_graphs import BenchmarkGraph
+from benchmark.show_error_graph import show_error_graph
 # My Modules
-from gradient.gradient import gradient_selon
 from distribution_family.distribution_family import DistributionFamily
-
 # Debug
 from utils.log import logstr
 from logging import info, debug, warn, error
 from utils.print_array_as_vector import get_vector_str
+# Kullback Leibler related functions
+from kullback_leibler.parameters_initialisation import initialisation
+from kullback_leibler.L_gradient.grad_importance_sampling import compute_grad_L_estimator_importance_sampling
+from kullback_leibler.L_gradient.grad_weights_in_grad import compute_grad_L_estimator_adaptive
 
-# Plots
-import plotly.express as plx
-from plotly.subplots import make_subplots
-import plotly.graph_objects as plgo
-
-#? BenchmarkGraph = Optional[List[ List[int]   | List[float] ]]
-#                                  iterations  |   erreur relative à composante k ∈ ⟦1,len(θₜ)⟧
-#    index :                       0           |   1, ... , n = len(θₜ)
-#    passe mieux pour le type hinting même si le vrai est plutôt en haut
-BenchmarkGraph = Optional[List[ List[float] ]]
-
-ParamsInitiaux = Tuple[ float,                  # η_t
-                        NDArray,                # θ_t
-                        float,                  # norm_grad_L
-                        List[float],            # X
-                        DistributionFamily,     # q_0
-                        BenchmarkGraph,         # benchmark_graph
-                        List[bool]              # state
-                      ]
-
-def initialisation(q : DistributionFamily, ɛ : float, θ_0 : Optional[NDArray], N : int, 𝛾 : float, η_0 : float, benchmark : bool) -> ParamsInitiaux:
-    """initialisationdes paramètres pour la SGA de la fonction L
-    
-    
-    Inputs : 
-    
-        q                               — original sampling policy : q(𝑥, θ)
-        
-        ɛ                               — threshold pour la norme du gradient
-        
-        θ_0                             — initialisation des paramètres
-        
-        nb_drawn_samples (N)            — Nombre de samples tirés par la distribution q à chaque itération
-        
-        nb_stochastic_choice (𝛾)        — nombre d'observations à tirer aléatoirement
-        
-        step (η_0)                      — initialisation du pas
-        
-        benchmark                       - if True, produces error graphs
-
-
-
-
-    Return :
-    
-        η_t, θ_t, norm_grad_L, X, q_0, counter, benchmark_graph, state
-        
-        η_t             : float
-        θ_t             : NDArray
-        norm_grad_L     : float
-        X               : list[float]
-        q_0             : DistributionFamily
-        benchmark_graph : list[list[float]] | None
-        state           : list[bool]
-    
-    """
-    
-    """TYPES DEFINITION"""
-    η_t             : float
-    θ_t             : NDArray
-    norm_grad_L     : float
-    X               : list[float]
-    q_0             : DistributionFamily
-    counter         : int
-    benchmark_graph : list[list[float]] | None
-    state           : list[bool]
-    
-    # initialisation
-    η_t = η_0
-    if θ_0 is None :
-        θ_0 = q.parameters_list()
-        θ_t = q.parameters_list()
-    else :
-        θ_t = θ_0
-        q.update_parameters(θ_0)
-    # on s'assure de commencer la première itération
-    norm_grad_L = (ɛ + 1)
-    
-    X = []
-    
-    debug(logstr(
-        f"\nη_t = {η_t}\nθ_t = {θ_t}\n𝛾 = {𝛾}\nN = {N}\n"
-                ))
-    
-    #! importance sampling selon q(θ_0)
-    q_0 = q.copy()
-        
-    
-    if benchmark is True :
-        benchmark_graph = [ list([]) for k in range( len(θ_t) + 1)]
-    else :
-        benchmark_graph = None
-
-    state = [False for k in range(3)]
-    
-    return η_t, θ_t, norm_grad_L, X, q_0, benchmark_graph, state
 
 
 
@@ -139,251 +44,25 @@ def cond_n_de_suite__update_state(cond, state : list[bool]) -> list[bool]:
     return new_state
 
 
-""""""
-def compute_grad_L_estimator(f_target : DistributionFamily, 
-                             q : DistributionFamily, 
-                             θ_t : NDArray, 
-                             nb_stochastic_choice : int,
-                             max_L_gradient_norm : int | float, 
-                             X_sampled_from_uniform : List[float]
-                             ) -> NDArray:
-    """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling
-    
-    𝛁_θ ∫ f(u)×log[q_θ(u)]du = ∫    f(u)       × 𝛁_θ[log q_θ(u)] du 
-                             = ∫ [f(u)/q_θ(u)] × 𝛁_θ[log q_θ(u)] × q_θ(u) du
-                             = 𝔼_θ[ (f(u)/q_θ(u)) × 𝛁_θ(log q_θ(u)) ]   
-    """
-    def ω(x,θ) -> float:
-        f_val = f_target.density(x)
-        q_val = q.density_fcn(x, θ)
-        res = f_val/q_val
-        # debug(logstr(f"ω(x,θ) = {res}"))
-        return res
-    # ⟶ scalaire
-
-    def h(x,θ) -> NDArray:
-        # x ⟼ log qₜ(x)
-        def log_q(u, theta) -> float :
-            return np.log(q.density_fcn(u, theta)) 
-        # [𝛁_θ]log qₜ(x)
-        res = gradient_selon(2, log_q, *[x, θ] )
-        # debug(logstr(f"h(x,θ) = {get_vector_str(res)}"))
-        return res
-    # ⟶ vecteur
-    
-    def grad_L(x_i, θ) -> NDArray:
-        res = h(x_i, θ) * ω(x_i, θ) #@ #res = h(x_i, θ) * ω(x_i, θ_0 )            
-        norm_res = np.linalg.norm(res)
-        norm_theta = np.linalg.norm(np.array(θ))
-        # avec les ω, si on a un ω ~ 10 000 lorsque q << f 
-        # on va avoir la norme de la direction qui explose
-        # on essaye d'éviter cela
-        if norm_res > max_L_gradient_norm * norm_theta :
-            debug(logstr(f"{norm_res} = || res || > {max_L_gradient_norm} x || θ || = {max_L_gradient_norm*norm_theta}\n\nreturning zeros..."))
-            # norm_max * 𝛁L/‖𝛁L‖
-            return max_L_gradient_norm * (res/norm_res)
-        return res
-    # ⟶ vecteur
-
-    grad_L_list : list[NDArray] = [ grad_L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(nb_stochastic_choice) ]
-    
-    grad_L_estimator : NDArray = np.add.reduce( grad_L_list )/nb_stochastic_choice
-    
-    return grad_L_estimator
-
-
-def compute_grad_L_estimator_adaptive(  f_target : DistributionFamily, 
-                                        q_t : DistributionFamily, 
-                                        θ_t : NDArray, 
-                                        nb_stochastic_choice : int,
-                                        max_L_gradient_norm : int | float, 
-                                        X_sampled_from_uniform : List[float]
-                             ) -> NDArray:
-    """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling avec un q adaptatif
-    
-    ω_θ = f / q_θ
-    on a donc ̂𝛁L = 1/n⋅∑ [𝛁_θ]( ω_θ × log(q_θ) )[X_i]
-    """
-    def ω(x,θ) -> float:
-        f_val = f_target.density(x)
-        q_val = q_t.density_fcn(x, θ)
-        res = f_val/q_val
-        # debug(logstr(f"ω(x,θ) = {res}"))
-        return res
-    # ⟶ scalaire
-
-    def grad_L(x_i, θ) -> NDArray:
-        
-        def log_q(u, theta) -> float :
-            return np.log(q_t.density_fcn(u, theta)) 
-        
-        fcn = lambda x, theta : ω(x, theta) * log_q(x, theta)
-        res = gradient_selon(2, fcn, *[x_i, θ])
-        
-        norm_res = np.linalg.norm(res)
-        norm_theta = np.linalg.norm(np.array(θ))
-        # avec les ω, si on a un ω ~ 10 000 lorsque q << f 
-        # on va avoir la norme de la direction qui explose
-        # on essaye d'éviter cela
-        if norm_res > max_L_gradient_norm * norm_theta :
-            debug(logstr(f"{norm_res} = || res || > {max_L_gradient_norm} x || θ || = {max_L_gradient_norm*norm_theta}\n\nreturning zeros..."))
-            # norm_max * 𝛁L/‖𝛁L‖
-            return max_L_gradient_norm * (res/norm_res)
-        return res
-    # ⟶ vecteur
-
-    grad_L_list : list[NDArray] = [ grad_L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(nb_stochastic_choice) ]
-    
-    grad_L_estimator : NDArray = np.add.reduce( grad_L_list )/nb_stochastic_choice
-    
-    return grad_L_estimator
-
-
-
-def compute_grad_L_estimator_importance_sampling(f_target : DistributionFamily, 
-                             q_t : DistributionFamily, 
-                             q_importance_sampling : DistributionFamily,
-                             θ_t : NDArray, 
-                             nb_stochastic_choice : int,
-                             max_L_gradient_norm : int | float, 
-                             X_sampled_from_uniform : List[float]
-                             ) -> NDArray:
-    """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling
-    
-    ω = f / q_importance_sampling
-    
-    on a donc 𝛁̂L = 1/n⋅∑ [𝛁_θ]( ω × log(q_θ) )[X_i]
-                 = 1/n⋅∑  ω[X_i] × [𝛁_θ]log(q_θ)[X_i]"""
-    def ω(x,θ) -> float:
-        f_val = f_target.density(x)
-        q_val = q_importance_sampling.density_fcn(x, θ)
-        res = f_val/q_val
-        # debug(logstr(f"ω(x,θ) = {res}"))
-        return res
-    # ⟶ scalaire
-
-    def h(x,θ) -> NDArray:
-        # x ⟼ log qₜ(x)
-        def log_q(u, theta) -> float :
-            return np.log(q_t.density_fcn(u, theta)) 
-        # [𝛁_θ]log qₜ(x)
-        res = gradient_selon(2, log_q, *[x, θ] )
-        # debug(logstr(f"h(x,θ) = {get_vector_str(res)}"))
-        return res
-    # ⟶ vecteur
-    
-    def grad_L(x_i, θ) -> NDArray:
-        res = h(x_i, θ) * ω(x_i, θ) #@ #res = h(x_i, θ) * ω(x_i, θ_0 )            
-        norm_res = np.linalg.norm(res)
-        norm_theta = np.linalg.norm(np.array(θ))
-        # avec les ω, si on a un ω ~ 10 000 lorsque q << f 
-        # on va avoir la norme de la direction qui explose
-        # on essaye d'éviter cela
-        if norm_res > max_L_gradient_norm * norm_theta :
-            debug(logstr(f"{norm_res} = || res || > {max_L_gradient_norm} x || θ || = {max_L_gradient_norm*norm_theta}\n\nreturning zeros..."))
-            # norm_max * 𝛁L/‖𝛁L‖
-            return max_L_gradient_norm * (res/norm_res)
-        return res
-    # ⟶ vecteur
-
-    grad_L_list : list[NDArray] = [ grad_L(x_i = X_sampled_from_uniform[i], θ = θ_t) for i in range(nb_stochastic_choice) ]
-    
-    grad_L_estimator : NDArray = np.add.reduce( grad_L_list )/nb_stochastic_choice
-    
-    return grad_L_estimator
-
-
-
-
-
-def show_error_graph(last_θ_t : NDArray, θ_target : NDArray, θ_init : NDArray, benchmark_graph : BenchmarkGraph,
-                     nb_drawn_samples, nb_stochastic_choice, step, max_L_gradient_norm  # subtitle parameters
-                    ) -> None:
-    """à partir du résultat de la SGA et des paramètres initiaux, produit le graphe des erreurs **relatives** du paramètre obtenu à partir du paramètre qui était visé, et ce en produisant un graphe composante par composante du paramètre θ estimé"""
-    if benchmark_graph is None :
-        raise TypeError("the benchmark_graph should not be None")
-    
-    n = len(last_θ_t)
-    
-    fig = make_subplots(
-                        rows= n//2 + n%2 , cols=2,
-                        subplot_titles= [ r"$\text{erreur relative : }" + "\\left| \\frac{" "θ_" + f"{k}" + "- θ^*_"f"{k}" +"}" + "{θ^*" + f"_{k}" + "}"  +"\\right|" "$" for k in range(n)]
-                )
-    
-    axis_range_dict = {}
-    
-    for k in range(n):
-        # print(f"({1 + k//2}, {1 + k%2})")
-        fig.add_trace(plgo.Scatter(x=benchmark_graph[0] , y=benchmark_graph[1+k]), row = 1 + k//2 , col = 1 + k%2)
-        y_max = max(benchmark_graph[1+k])
-        axis_range_dict[f"yaxis{k+1}"] = dict(range=[0, 1.1 * y_max])
-    
-    fig.update_xaxes(title_text='iteration')
-    fig.update_yaxes(title_text='Relative error to target parameter')
-    
-    
-    
-    fig.update_layout(title=f"θ_target = {[round(composante, 2) for composante in θ_target]}      θ_init = {[round(composante, 2) for composante in θ_init]} <br><br><sup>N = {nb_drawn_samples}  |  𝛾 = {nb_stochastic_choice}  | η₀ = {step}  | safety_coeff = {max_L_gradient_norm}</sup>",
-    **axis_range_dict)
-    fig.show()
-
-
-def combine_error_graph(list_last_θ_t : Dict[str, NDArray], θ_target : NDArray, θ_init : NDArray, list_benchmark_graph : Dict[str, BenchmarkGraph],
-                     color_dict : Dict[str, str], nb_drawn_samples, nb_stochastic_choice, step, max_L_gradient_norm  # subtitle parameters
-                    ) -> None:
-    """à partir du résultat de la SGA et des paramètres initiaux, produit le graphe des erreurs **relatives** du paramètre obtenu à partir du paramètre qui était visé, et ce en produisant un graphe composante par composante du paramètre θ estimé"""
-    if not(len(list_last_θ_t) == len(list_benchmark_graph)) :
-        raise ValueError("lists are not of the same lenghth")        
-    
-    n = [len(list_last_θ_t[key]) for key in list_last_θ_t][0]
-    
-    fig = make_subplots(
-                        rows= n//2 + n%2 , cols=2,
-                        subplot_titles= [ r"$\text{erreur relative : }" + "\\left| \\frac{" "θ_" + f"{k}" + "- θ^*_"f"{k}" +"}" + "{θ^*" + f"_{k}" + "}"  +"\\right|" "$" for k in range(n)]
-                )
-    
-    axis_range_dict = {}
-    
-    y_max_list = []
-    
-    for k in range(n):
-        y_max_list.append( max([max(benchmark_graph[1+k]) for key, benchmark_graph in list_benchmark_graph.items() if benchmark_graph is not None]) )
-    
-    for key, benchmark_graph in list_benchmark_graph.items() :
-        if benchmark_graph is None :
-            raise TypeError("the benchmark_graph should not be None")
-        for k in range(n):
-            # print(f"({1 + k//2}, {1 + k%2})")
-            fig.add_trace(plgo.Scatter(x=benchmark_graph[0] , y=benchmark_graph[1+k], name=f"θ_{k} : {key}", marker_color=color_dict[key]), row = 1 + k//2 , col = 1 + k%2)
-            y_max = y_max_list[k]
-            print(y_max)
-            axis_range_dict[f"yaxis{k+1}"] = dict(range=[0, 1.1 * y_max])
-        
-    fig.update_xaxes(title_text='iteration')
-    fig.update_yaxes(title_text='Relative error to target parameter')
-    
-    
-    
-    fig.update_layout(title=f"θ_target = {[round(composante, 2) for composante in θ_target]}      θ_init = {[round(composante, 2) for composante in θ_init]} <br><br><sup>N = {nb_drawn_samples}  |  𝛾 = {nb_stochastic_choice}  | η₀ = {step}  | safety_coeff = {max_L_gradient_norm}</sup>",
-    **axis_range_dict)
-    fig.show()
-
-
-
-def sga_kullback_leibler_likelihood(
+def sga_kullback_leibler_likelihood(    # distributions
                                         f_target : DistributionFamily ,
                                         q_init : DistributionFamily , 
+                                        # stochastic part
                                         nb_drawn_samples : int, 
                                         nb_stochastic_choice : int, 
+                                        # gradient ascent parameters
                                         step : float, 
                                         θ_0 : Optional[NDArray] = None, 
                                         ɛ : float = 1e-6, 
                                         iter_limit = 100, 
+                                        # other parameters
                                         benchmark : bool = False, 
                                         max_L_gradient_norm : int | float = np.Infinity,
                                         adaptive : bool = False,
                                         weight_in_gradient : bool = False,
-                                        show_benchmark_graph : bool = False
+                                        show_benchmark_graph : bool = False,
+                                        # specific sub component of parameter of interest
+                                        param_composante : Optional[int] = None
                                     ) -> Tuple[NDArray, Optional[BenchmarkGraph]]:
     """effectue une stochastic gradient ascent pour le problème d'optimisation de θ suivant le critère de la vraissemblance de Kullback-Leibler
         
@@ -428,7 +107,10 @@ def sga_kullback_leibler_likelihood(
                                             
     """
     
-    η_t, θ_t, norm_grad_L, X, q, benchmark_graph, state = initialisation(q_init, ɛ, θ_0, nb_drawn_samples, nb_stochastic_choice, step, benchmark)
+    """Initialisation"""
+    η_t, θ_t, norm_grad_L, X, q_t, benchmark_graph, state = initialisation(q_init, ɛ, θ_0, nb_drawn_samples, nb_stochastic_choice, step, benchmark)
+    
+    
     # useful for computing error
     if benchmark_graph is not None :
         target : NDArray = f_target.parameters_list()
@@ -437,81 +119,100 @@ def sga_kullback_leibler_likelihood(
         target = np.array([])
         theta_init = np.array([])
     
-    # new_samples = []
+    
+    # How samples are being drawn depending on whether importance sampling is from a fixed distribution or adaptive
     if not adaptive :
-        X = q_init.sample(500)
+        X = q_init.sample(nb_drawn_samples)
         if X is None :
             X = []
             raise ValueError("generated sample is None !")
     else :
         X = []
     
+    # adding the initial θ₀ to the benchmark graph
+    if benchmark_graph is not None :
+        benchmark_graph[0].append(0)
+        for k in range(len(θ_t)) :
+                # we add the relative error between θ_t and θ_target
+                d_k = np.abs((θ_t[k] - target[k])/(target[k] + 1e-4))
+                #####################################################
+                benchmark_graph[1+k].append(d_k)
+    
+    
+    """MAIN LOOP"""
     for counter in range(iter_limit):
+        
+        # si on a atteint l'objectif (on est dans un minimum local et on espère global) on peut arrêter els itérations
         if all(cond_n_de_suite__update_state(norm_grad_L <= ɛ, state)):
             debug(logstr(f"norm_grad_L = {norm_grad_L}"))
             break
         
+        # Adaptive ⇒ we sample from the new distribution at each iteration
         if adaptive :
-            new_sample : list | None = q.sample(nb_drawn_samples)
-            # new_samples.append(new_sample)
+            new_sample : list | None = q_t.sample(nb_drawn_samples)
+            # la méthode sample peut retourner un None en cas de problème, on doit gérer le cas
             if new_sample is None :
-                raise ValueError(f"could not sample from q \n(params = {q.parameters})\nnew_sample = None")
-            # todo
-            # comprendre pourquoi si je mets juste X = new_sample
-            # on finit par avoir des variances négatives ?
+                raise ValueError(f"could not sample from q_t \n(params = {q_t.parameters})\nnew_sample = None")
             else :
                 X = new_sample + X
-            # X = new_samples.pop(0)
         
+        # non stochastic gradient ascent ⇒ use all X
         if nb_stochastic_choice == nb_drawn_samples :
             X_sampled_from_uniform = X
+        # stochastic gradient descent ⇒ use a subset of X
         else :
             obs_tirées = nprd.choice(range(len(X)), nb_stochastic_choice, replace=False)
             X_sampled_from_uniform = [  X[i] for i in obs_tirées  ]
         
         
-        # 𝛁L
+        # computation of an estimator of 𝛁L
         if adaptive :
             if weight_in_gradient :
-                grad_L_estimator = compute_grad_L_estimator_adaptive(f_target, q, 
+                grad_L_estimator = compute_grad_L_estimator_adaptive(f_target, q_t, 
                                                             θ_t, 
                                                             nb_stochastic_choice,
                                                             max_L_gradient_norm, 
-                                                            X_sampled_from_uniform)
+                                                            X_sampled_from_uniform,
+                                                            param_composante)
             else :
-                grad_L_estimator = compute_grad_L_estimator_importance_sampling(f_target, q, q,
+                grad_L_estimator = compute_grad_L_estimator_importance_sampling(f_target, q_t, q_t,
                                                             θ_t, 
                                                             nb_stochastic_choice,
                                                             max_L_gradient_norm, 
-                                                            X_sampled_from_uniform)
+                                                            X_sampled_from_uniform,
+                                                            param_composante)
         else :
-            grad_L_estimator = compute_grad_L_estimator_importance_sampling(f_target, q, q_init,
+            grad_L_estimator = compute_grad_L_estimator_importance_sampling(f_target, q_t, q_init,
                                                         θ_t, 
                                                         nb_stochastic_choice,
                                                         max_L_gradient_norm, 
-                                                        X_sampled_from_uniform)
-        # ‖𝛁L‖
+                                                        X_sampled_from_uniform,
+                                                        param_composante)
+        # computation of ‖𝛁L‖
         norm_grad_L = np.linalg.norm(grad_L_estimator)
         
         # gradient ascent
         θ_t = θ_t + η_t * grad_L_estimator
-        
-        str_theta = f"θ_{counter} = {θ_t}"
-        print(str_theta)
-        debug(logstr(str_theta))
-        
-        # aprameters update
-        q.update_parameters(θ_t)
-        # print(q.parameters)
-        
+                
+        """——— Parameters update ———"""
+        q_t.update_parameters(θ_t)
         η_t = update_η(η_t)
-        debug(logstr(f"η_t+1 = {η_t}"))
         
+        #printing every 20 iterations in the console
+        if counter % 20 == 0 :
+            str_theta = f"θ_{counter} = {θ_t}"
+            print(str_theta)
+            debug(logstr(str_theta))
+            debug(logstr(f"η_t+1 = {η_t}"))
+            # todo : one may also implement here a save of the parameter found every 20 iterations, or even better choose a number of iterations before a checkmark (...)
+        
+        """——— Benchmarking ———"""
         # if we desire to benchmark : we build the error graph
         if benchmark_graph is not None :
-            
             #           X AXIS
-            benchmark_graph[0].append(counter)
+            benchmark_graph[0].append(counter+1)
+            #? adding the likelihood graph 
+            # benchmark_graph[len(θ_t)+1].append(compute_likelihood(f_target=f_target, q_t = q, theta_t=θ_t, q_importance_sampling= q_init, X_sampled_from_uniform = X_sampled_from_uniform))
             
             #           Y AXIS
             for k in range(len(θ_t)) :
@@ -519,7 +220,6 @@ def sga_kullback_leibler_likelihood(
                 d_k = np.abs((θ_t[k] - target[k])/(target[k] + 1e-4))
                 #####################################################
                 benchmark_graph[1+k].append(d_k)
-        
     # à la fin on plot le graphe des erreurs
     if (benchmark_graph is not None) and (show_benchmark_graph is True) :
         show_error_graph(last_θ_t = θ_t, 
@@ -536,45 +236,5 @@ def sga_kullback_leibler_likelihood(
         return θ_t, benchmark_graph
     else :
         return θ_t, None
-
-
-def compare_sga_methods(
-                        f_target : DistributionFamily ,
-                        q_init : DistributionFamily , 
-                        nb_drawn_samples : int, 
-                        nb_stochastic_choice : int, 
-                        step : float, 
-                        ɛ : float = 1e-6, 
-                        iter_limit = 100, 
-                        max_L_gradient_norm : int | float = np.Infinity) -> None:
-    # adaptive : false
-    # weight in grad : false
-    last_param_1, graph1 = sga_kullback_leibler_likelihood(f_target, q_init, nb_drawn_samples, nb_stochastic_choice, step, None,  ɛ, iter_limit , True, max_L_gradient_norm, False, False)
-    # adaptive : true
-    # weight in grad : false
-    last_param_2, graph2 = sga_kullback_leibler_likelihood(f_target, q_init, nb_drawn_samples, nb_stochastic_choice, step,  None, ɛ, iter_limit , True, max_L_gradient_norm, True, False)
-    # adaptive : true
-    # weight in grad : true
-    last_param_3, graph3 =sga_kullback_leibler_likelihood(f_target, q_init, nb_drawn_samples, nb_stochastic_choice, step,  None, ɛ, iter_limit , True, max_L_gradient_norm, True, True)
-    
-    last_theta_dict = {
-        "IS q0": last_param_1,
-        "IS qt": last_param_2,
-        "ω in grad":last_param_3
-    }
-    
-    graph_dict = {
-        "IS q0": graph1,
-        "IS qt": graph2,
-        "ω in grad":graph3
-    }
-    
-    color_dict = {
-        "IS q0": "#227093",
-        "IS qt": "#ff793f",
-        "ω in grad": "#218c74"
-    }
-    
-    combine_error_graph(last_theta_dict, f_target.parameters_list(), q_init.parameters_list(), graph_dict, color_dict, nb_drawn_samples, nb_stochastic_choice, step, max_L_gradient_norm)
 
 

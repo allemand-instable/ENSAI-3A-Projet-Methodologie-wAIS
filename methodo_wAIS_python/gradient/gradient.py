@@ -8,20 +8,7 @@ from logging import info, debug, warn, error, critical
 from numpy.typing import ArrayLike
 from typing import Protocol, Union
 
-vector_or_scalar = NDArray | float
-
-# type hinting
-class MultivariateFunction_to_R(Protocol):
-    """
-    function defined by the relation y = f( 𝑥ᵢ )₁,ₙ
-    
-    i.e
-    
-        Π ℝᴸᵉⁿ⁽ˣ-ⁱ⁾ ⟶   ℝ
-    f : ( 𝑥ᵢ )₁,ₙ   ⟼   y
-    """
-    def __call__(self, *float_args : NDArray[np.float64] ) -> float: ...
-
+from custom_typing.custom_types import MultivariateFunction_to_R
 
 
 def gradient_selon(arg_num : int ,f : MultivariateFunction_to_R, *args ,h = 1e-7, composante : Optional[int] = None) -> NDArray:
