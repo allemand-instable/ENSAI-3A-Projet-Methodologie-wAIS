@@ -3,9 +3,39 @@
 \subsubsection{Rényi's Alpha Divergence}
 
 $$
-	R_\alpha(p \Vert q) = \frac 1 {\alpha - 1} \log \esperanceloi q { \left( \frac {p(X)} {q(X)} \right)^\alpha }
+\begin{array}{rcl}
+	R_\alpha(p \Vert q) &=& \frac 1 {\alpha - 1} \log \esperanceloi q { \left( \frac {p(X)} {q(X)} \right)^\alpha }
+\\
+R_\alpha(q_\theta \Vert f) &=& 
+\frac 1 {\alpha - 1} \log \esperanceloi f { \left( \frac {q_\theta(X)} {f(X)} \right)^\alpha }
+\\
+&=& 
+\frac {1}{\alpha - 1} \log \esperanceloi{ q_0 }{ \left( \frac{f(X)}{q_0(X)} \right) \left( \frac {q_\theta(X)} {f(X)} \right)^\alpha }
+\end{array}
 $$
 
+therefore we can derive the following expression of the gradient of the Rényi's alpha divergence, using the differentiation under the integral theorem :
+
+
+$$\nabla_\theta R_\alpha(q_\theta \Vert f) = \frac {1}{\alpha - 1} \log \esperanceloi{ q_0 }{ \left( \frac{f(X)}{q_0(X)} \right) \nabla_\theta \left( \frac {q_\theta(X)} {f(X)} \right)^\alpha }$$
+
+we can deduce from there, using the law of large numbers an estimator of $\nabla_\theta R_\alpha(q_\theta \Vert f)$, which will be noted as $\widehat{\nabla R_\alpha}$:
+
+\[
+	\begin{array}{rcl}
+		
+	\widehat{\nabla R_\alpha} &=& \displaystyle{\frac 1 N \sum\limits_{i=1}^N  \left( \frac{f(x_i)^{1-\alpha}}{q_0(x_i)} \right) \widehat{\nabla_\theta }\left[\left( {q_\theta(x_i)} \right)^\alpha\right]}
+		\\
+	&=& \displaystyle{\frac 1 N \sum\limits_{i=1}^N \omega_i \cdot h_i(\theta)}
+\end{array}
+\]
+
+	with :
+	\begin{itemize}
+	
+		\item $\displaystyle{\omega_i \isdef \frac{f(x_i)^{1-\alpha}}{q_0(x_i)}}$
+		\item $\displaystyle{h_i(\theta) \isdef \widehat{\nabla_\theta }\left[\left( {q_\theta(x_i)} \right)^\alpha\right]}$
+	\end{itemize}
 
 
 \subsubsection{Amari's Alpha Divergence}
