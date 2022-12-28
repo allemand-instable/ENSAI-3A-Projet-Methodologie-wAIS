@@ -1,5 +1,11 @@
 \begin{thebibliography}{1}
 
+\bibitem{pmle}
+A.~Monfort C.~Gourieroux and A.~Trognon.
+\newblock Pseudo maximum likelihood methods: Theory.
+\newblock {\em The Econometric Society}, 52(3), 1984.
+\newblock pages 681-700. DOI : https://doi.org/10.2307/1913471.
+
 \bibitem{portierdelyonWAIS}
 Portier and Delyon.
 \newblock Asymptotic optimality of adaptive importance sampling.

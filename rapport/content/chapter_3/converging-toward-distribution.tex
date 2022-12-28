@@ -1,30 +1,9 @@
 \subsubsection{Testing the distribution convergence}
 
-In this section we are going to the test how the stochastic gradient descent algorithm based on the Kullback-Leibler criterion performs. Thus, we are looking to compute 
-$$\hat{\theta} = argmax_{\theta} \frac 1 N \displaystyle\sum_{i = 1}^N \omega_\theta(X_i) \times h_\theta(X_i)$$
+The normal [fig \ref{sim:normal}] and logistic [fig \ref{sim:logistic}] distributions seem to gain a lot of speed in convergence when using $\displaystyle{\frac 1 n \sum\limits_i \nabla_\theta \left[ \left( \frac{f(x_i)}{q_t(x_i)}\right) \cdot \log q_t(x_i) \right]}$. 
+We are not sure of the mathematical explanation on why it behaves this way, one might consider to derive a result from the fact both distributions are from the quadratic exponential family as described in Gourieux, Montfort and Trognon~\cite{pmle}.
 
-\faAngleRight \ $\omega_\theta : x \mapsto \frac{f(x)}{q_\theta(x)}$
+$$f(x \vert \begin{bmatrix}
+    m \\ \Sigma
+\end{bmatrix}) = \exp \left[ A(m, \Sigma) + B(x) + C(m, \Sigma)x + x^* D(m, \Sigma) x \right]$$
 
-\faAngleRight \ $h_\theta : x \mapsto \nabla_\theta \ \log q_\theta(x)$
-
-The target distribution $f$ belongs the class of univariate normal distributions, where $f$ is $N$, $\mu = , \sigma^2 = $. The proposal distribution $q_0$ equally belongs to the collection of univariate normal distributions. A highly rigid surface and many local minima make it a rather tricky endeavor to optimize the Kullback-Leibler Divergence in the given scenerario. Hence, we consider various parametrizations of $q_0$.
-Both, $mu$ and $sigma$ are updated iteratively. 
-Other parameters were fixed at the following values:
-\begin{enumerate}
-    \item Total sample size $N_T = $
-    \item batch size $n_t = $
-    \item 
-\end{enumerate} 
-
-Insert pictures and descriptions of behaviour. 
-
-Other parameters were fixed at the following values:
-\begin{enumerate}
-    \item Total sample size $N_T = $
-    \item batch size $n_t = $
-    \item 
-\end{enumerate} 
--
--
--
-We did a first assessment of the data using 

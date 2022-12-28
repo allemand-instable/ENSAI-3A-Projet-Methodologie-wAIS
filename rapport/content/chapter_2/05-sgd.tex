@@ -1,75 +1,75 @@
 \pagebreak
 
 \subsubsection{Stochastic Gradient Descent}
+	We remember our empirical gradient:
 
-We remember our empirical gradient:
+	$$\nabla L(\theta) \approx \frac 1 N \displaystyle\sum_{i = 1}^N \omega(X_i) \times h_\theta(X_i)$$
 
-$$\nabla L(\theta) \approx \frac 1 N \displaystyle\sum_{i = 1}^N \omega(X_i) \times h_\theta(X_i)$$
+	\faAngleRight \ $\omega : x \mapsto \frac{f(x)}{q_0(x)}$
 
-\faAngleRight \ $\omega : x \mapsto \frac{f(x)}{q_0(x)}$
+	\faAngleRight \ $h_\theta : x \mapsto \nabla_\theta \ \log q_\theta(x)$
 
-\faAngleRight \ $h_\theta : x \mapsto \nabla_\theta \ \log q_\theta(x)$
+	\bigskip
 
-\bigskip
+	with the $X_i$ sampled from the distribution $q_{\theta_t}$
 
-with the $X_i$ sampled from the distribution $q_{\theta_t}$
+	\bigskip
 
-\bigskip
+	Gradient ascent evaluates the entire gradient at every iteration. A less computationally demanding variation of gradient descent can be found in stochastic gradient descent. Here, the gradient is approximated by computing the gradient only on a random subset instead of the entire sample. In situations where the data dimension and the data set are very large, evaluating the gradient can be truly expensive. Stochastic Gradient Descent has great merit in such situations.
 
-Gradient ascent evaluates the entire gradient at every iteration. A less computationally demanding variation of gradient descent can be found in stochastic gradient descent. Here, the gradient is approximated by computing the gradient only on a random subset instead of the entire sample. In situations where the data dimension and the data set are very large, evaluating the gradient can be truly expensive. Stochastic Gradient Descent has great merit in such situations. 
+	\bigskip
 
-\bigskip
+	We have
+	$$\nabla L(\theta) = \frac 1 n \sum_{i \in \textsf{all obseravtions}} \nabla L_i(\theta)$$.
 
-We have
-$$\nabla L(\theta) = \frac 1 n \sum_{i \in \textsf{all obseravtions}} \nabla L_i(\theta)$$.
+	\bigskip
 
-\bigskip
+	Hence the algorithm is now described as follows :
 
-Hence the algorithm is now described as follows :
+	\begin{algorithm}[H]
+		\caption{Stochastic Gradient Ascent [SGA]}\label{alg:sgaAdaptive}
+		\begin{algorithmic}
+			\Require
+			\\ \ra Initiate $\theta_0 \in \mathbb R^p$
+			\\ \ra Initiate $\eta_0$ (or $\eta$ for a fixed step size)
+			\\ \ra Initiate the sampling distribution $q_0$
+			\bigskip
+			\\ \blackboxed{new} choose $\gamma$ the number of samples drawn at each step
+			\bigskip
+			\\ \ra choose a small value of $\varepsilon$ ( i.e $\varepsilon \rightarrow 0 $)
+			\\ \ra choose a number of maximum iterations : max.iter
+			\For{$t \in \llbracket 1, \max.iter \rrbracket$}
+			\If {$\Vert \nabla f \Vert < \varepsilon$}
+			\State Break the loop
+			\EndIf
+			\State Sample $N_t$ from distribution $q_t$
 
-\begin{algorithm}[H]
-    \caption{Stochastic Gradient Ascent [SGA]}\label{alg:gaAdaptive}
-    \begin{algorithmic}
-        \Require 
-        \\ \ra Initiate $\theta_0 \in \mathbb R^p$ 
-        \\ \ra Initiate $\eta_0$ (or $\eta$ for a fixed step size) 
-        \\ \ra Initiate the sampling distribution $q_0$
-        \bigskip
-        \\ \blackboxed{new} choose $\gamma$ the number of samples drawn at each step
-        \bigskip
-        \\ \ra choose a small value of $\varepsilon$ ( i.e $\varepsilon \rightarrow 0 $)
-        \\ \ra choose a number of maximum iterations : max.iter
-        \For{$t \in \llbracket 1, \max.iter \rrbracket$}
-        \If {$\Vert \nabla f \Vert < \varepsilon$}
-        \State Break the loop
-        \EndIf
-            \State Sample $N_t$ from distribution $q_t$ 
+			\bigskip
 
-            \bigskip
+			\State \blackboxed{new} select a random subset $I_\gamma(t) \subset \intervaleint 1 N$ according to the uniform distribution $\mathcal U \left( \intervaleint 1 N \right)$
 
-            \State \blackboxed{new} select a random subset $I_\gamma(t) \subset \intervaleint 1 N$ according to the uniform distribution $\mathcal U \left( \intervaleint 1 N \right)$
+			\bigskip
 
-            \bigskip
+			\State \blackboxed{modified} compute
 
-            \State \blackboxed{modified} compute 
-            
-            $$\widehat{\nabla_\theta L}(\theta_t) = \frac 1 \gamma \displaystyle\sum\limits_{i \in I_\gamma(t)} \nabla_\theta \left[\omega_\theta(X_i) h_\theta(X_i)\right]$$ 
-            
+			$$\widehat{\nabla_\theta L}(\theta_t) = \frac 1 \gamma \displaystyle\sum\limits_{i \in I_\gamma(t)} \nabla_\theta \left[\omega_\theta(X_i) h_\theta(X_i)\right]$$
 
-            $$\begin{array}{l}
-            \faCaretRight \, {N = \sum N_t}
-             \\
-            \faCaretRight \, {\omega_\theta : x \mapsto \frac{f(x)}{q_t(x)}}
-             \\
-            \faCaretRight \, {h_\theta : x \mapsto \log q_t(x)}
-            \end{array}
-            $$
 
-            \smallskip
+			$$\begin{array}{l}
+					\faCaretRight \, {N = \sum N_t}
+					\\
+					\faCaretRight \, {\omega_\theta : x \mapsto \frac{f(x)}{q_t(x)}}
+					\\
+					\faCaretRight \, {h_\theta : x \mapsto \log q_t(x)}
+				\end{array}
+			$$
 
-            \State \ra $\underbracket[1pt][5pt]{\theta_{[t]} \gets}_{\theta_{t+1} = } \theta_{[t]} + \eta \nabla L(\theta_t)$
-            \State \ra update $\eta$ such that $f(x_{t+1}) > f(x_t)$ 
-            \State \ra Update $q_t$ with the recently computed parameter
-        \EndFor  
-    \end{algorithmic}
-    \end{algorithm}
+			\smallskip
+
+			\State \ra $\underbracket[1pt][5pt]{\theta_{[t]} \gets}_{\theta_{t+1} = } \theta_{[t]} + \eta \nabla L(\theta_t)$
+			\State \ra update $\eta$ such that $f(x_{t+1}) > f(x_t)$
+			\State \ra Update $q_t$ with the recently computed parameter
+			\EndFor
+		\end{algorithmic}
+	\end{algorithm}
+

@@ -9,7 +9,15 @@ $$P(x) = ax^3 + b x^2 + c x$$
 
 we decompose the function as $f = h \times q $ to compute it using Mote Carlo methods :
 
-$$\displaystyle\int\limits_A^B P(x)dx = \displaystyle\int\limits_A^B \underbrace{\sqrt{2\pi e^{\frac{x^2} 2}}P(x)}_{g} \underbrace{e^{\frac{-x^2} 2}}_{h = \mathcal N(0,1)} \ dx$$
+$$\begin{array}{rcl}
+\displaystyle\int\limits_A^B P(x)dx 
+&=& 
+\displaystyle\int\limits_A^B \underbrace{\sqrt{2\pi} e^{\frac{x^2} 2}P(x)}_{h} \underbrace{\frac{e^{\frac{-x^2} 2}}{\sqrt{2\pi}}}_{q = \mathcal N(0,1)} \ dx
+\\
+&=& \esperanceloi{\mathcal N(0,1)}{h(X)} 
+\\
+&=& \sqrt{2\pi} \esperanceloi{\mathcal N(0,1)} {e^{\frac{X^2} 2}P(X)}
+\end{array}$$
 
 However we know the integral precisely :
 
