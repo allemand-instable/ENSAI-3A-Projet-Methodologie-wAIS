@@ -77,7 +77,7 @@ class DistributionFamily():
         """retourne les paramètres comme liste de float, peu importe le format initial des paramètres fourni"""
         if type(self.parameters) is dict :
             return np.array([*self.parameters.values()])
-        elif type(self.parameters) in [list, ArrayLike, NDArray] :
+        elif type(self.parameters) in [list, np.ndarray] :
             return np.array(self.parameters)
         else :
             raise TypeError("self.parameters should be a : dict, list or array")
