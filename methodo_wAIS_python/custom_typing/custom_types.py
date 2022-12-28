@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Any, Callable, Optional, List, Dict, Tuple
+from typing import Any, Callable, Optional, List, Dict, Tuple, TypedDict
 from numpy.typing import NDArray
 from numpy.typing import ArrayLike
 from typing import Protocol, Union
@@ -35,3 +35,26 @@ class MultivariateFunction_to_R(Protocol):
     f : ( 𝑥ᵢ )₁,ₙ   ⟼   y
     """
     def __call__(self, *float_args : NDArray[np.float64] ) -> float: ...
+
+class IterativeParameterMethod(Protocol):
+    def __call__(self, f_target : DistributionFamily, q_init : DistributionFamily, **kwargs) -> NDArray: ...
+    
+class SGA_Params(TypedDict):
+    """Parameters for SGA
+    ➤  nb_drawn_samples : int 
+    ➤  nb_stochastic_choice : int 
+    ➤  step : float
+    ➤  θ_0 : Optional[NDArray]  
+    ➤  ɛ : float
+    ➤  iter_limit : int 
+    ➤  max_L_gradient_norm : float 
+    ➤  param_composante : int
+    """
+    nb_drawn_samples : int 
+    nb_stochastic_choice : int 
+    step : float
+    θ_0 : Optional[NDArray[np.float64]]  
+    ɛ : float
+    iter_limit : int 
+    max_L_gradient_norm : float 
+    param_composante : int

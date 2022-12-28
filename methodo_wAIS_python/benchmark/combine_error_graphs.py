@@ -20,11 +20,12 @@ def combine_error_graph(list_last_θ_t : Dict[str, NDArray],
                         θ_target : NDArray, 
                         θ_init : NDArray, 
                         list_benchmark_graph : Dict[str, BenchmarkGraph],
-                    color_dict : Dict[str, str], 
-                    nb_drawn_samples : int, 
-                    nb_stochastic_choice : int, 
-                    step : float, 
-                    max_L_gradient_norm : float,  # subtitle parameters
+                        color_dict : Dict[str, str], 
+                        # subtitle parameters
+                        nb_drawn_samples : int, 
+                        nb_stochastic_choice : int, 
+                        step : float, 
+                        max_L_gradient_norm : float,  
                     ) -> None:
     """à partir du résultat de la SGA et des paramètres initiaux, produit le graphe des erreurs **relatives** du paramètre obtenu à partir du paramètre qui était visé, et ce en produisant un graphe composante par composante du paramètre θ estimé"""
     if not(len(list_last_θ_t) == len(list_benchmark_graph)) :
