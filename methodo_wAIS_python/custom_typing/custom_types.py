@@ -58,3 +58,36 @@ class SGA_Params(TypedDict):
     iter_limit : int 
     max_L_gradient_norm : float 
     param_composante : int
+    
+    
+class ImportanceSamplingGradientEstimation(Protocol):
+    """An integral function (estimated using importance sampling) used for stochastic gradient descent
+    
+    computes 𝔼[ ω(X) × h(X, θ) ] ≈ 1/N ∑ ωᵢ⋅hᵢ(θ)
+    
+    with ωᵢ = ω(Xᵢ)
+    and  hᵢ(θ) = h(Xᵢ, θ)
+    
+    arguments :
+    
+    ➤  f_target                [DistributionFamily]
+    ➤  q_t                     [DistributionFamily]
+    ➤  q_importance_sampling   [DistributionFamily]
+    ➤  θ_t                     [NDArray]
+    ➤  nb_stochastic_choice    [int]
+    ➤  max_L_gradient_norm     [float]
+    ➤  X_sampled_from_uniform  [List[float]]
+    ➤  param_composante        [Optional[int]]
+    
+    """
+    def __call__(self,
+                f_target : DistributionFamily, 
+                q_t : DistributionFamily, 
+                q_importance_sampling : DistributionFamily,
+                θ_t : NDArray, 
+                nb_stochastic_choice : int,
+                max_L_gradient_norm : int | float, 
+                X_sampled_from_uniform : List[float],
+                param_composante : Optional[int]
+                )    ->  NDArray: ...
+    
