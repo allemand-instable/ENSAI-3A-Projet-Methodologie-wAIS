@@ -1,4 +1,4 @@
-from math_tools.distribution_family import DistributionFamily
+from distribution_family.distribution_family import DistributionFamily
 import numpy.random as nprd
 import numpy as np
 

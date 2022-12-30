@@ -2,6 +2,7 @@ import numpy as np
 # typing
 from typing import Callable, Any, Dict, List, Optional, Tuple, Literal
 from numpy.typing import ArrayLike, NDArray
+from custom_typing.custom_types import ImportanceSamplingGradientEstimation
 # My Modules
 from gradient.gradient import gradient_selon
 from distribution_family.distribution_family import DistributionFamily
@@ -10,14 +11,15 @@ from utils.log import logstr
 from logging import info, debug, warn, error
 
 
-def compute_grad_L_estimator_importance_sampling(f_target : DistributionFamily, 
-                             q_t : DistributionFamily, 
-                             q_importance_sampling : DistributionFamily,
-                             θ_t : NDArray, 
-                             nb_stochastic_choice : int,
-                             max_L_gradient_norm : int | float, 
-                             X_sampled_from_uniform : List[float],
-                             param_composante : Optional[int] = None
+def compute_grad_L_estimator_importance_sampling(
+                                f_target : DistributionFamily, 
+                                q_t : DistributionFamily, 
+                                q_importance_sampling : DistributionFamily,
+                                θ_t : NDArray, 
+                                nb_stochastic_choice : int,
+                                max_L_gradient_norm : int | float, 
+                                X_sampled_from_uniform : List[float],
+                                param_composante : Optional[int] = None
                              ) -> NDArray:
     """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling
     
