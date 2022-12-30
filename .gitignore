@@ -17,3 +17,5 @@ Cargo.lock
 *.1
 *.1
 methodo_wAIS_python/log/debug.log.1
+rapport.zip
+rapport/rapport.zip
