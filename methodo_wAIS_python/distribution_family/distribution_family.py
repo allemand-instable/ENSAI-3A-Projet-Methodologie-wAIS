@@ -50,11 +50,11 @@ class DistributionFamily():
         Returns:
             float: f( x | self.parameters )
         """
-        if type(self.parameters) is dict :
+        if isinstance(self.parameters, dict) :
             return self.density_fcn(x, np.array([*self.parameters.values()]))
-        if type(self.parameters) is list :
+        if isinstance(self.parameters, list) :
             return self.density_fcn(x, np.array(self.parameters))
-        if type(self.parameters) is ArrayLike :
+        if isinstance(self.parameters, np.ndarray) :
             return self.density_fcn(x, np.array(self.parameters))
         else :
             raise TypeError("self.parameters should be a dict, a list, or an array")
