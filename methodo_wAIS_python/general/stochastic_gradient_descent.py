@@ -3,7 +3,7 @@ from copy import deepcopy
 # typing
 from typing import Callable, List, Literal, Optional, Tuple
 from numpy.typing import NDArray
-from custom_typing.custom_types import ImportanceSamplingIntegralEstimation
+from custom_typing.custom_types import ImportanceSamplingGradientEstimation
 # random
 from random import randint
 import numpy.random as nprd
@@ -40,7 +40,7 @@ def gradient_descent(
                                         f_target : DistributionFamily ,
                                         q_init : DistributionFamily , 
                                         # function to be computed
-                                        compute_grad_L_importance_sampling : ImportanceSamplingIntegralEstimation,
+                                        compute_grad_L_importance_sampling : ImportanceSamplingGradientEstimation,
                                         # stochastic part
                                         nb_drawn_samples : int, 
                                         nb_stochastic_choice : int, 

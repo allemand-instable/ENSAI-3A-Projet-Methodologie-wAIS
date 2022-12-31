@@ -1,7 +1,14 @@
 import test.SGA_seq as SGAseq
+import test.wAIS as wAIS
 
 def main():
-    other_distrib_test()
+    # SGAseq.generalized_code()
+    integral_test_polynomial()
+    
+def integral_test_polynomial():
+    # wAIS.main()
+    SGAseq.renyi_vs_kullback_knwon_var()
+    SGAseq.renyi_vs_kullback_unknwon_var()
     
 def normal_test():
     params = SGAseq.mean_seq(3,13, 500, 0.2)
@@ -15,3 +22,4 @@ def normal_test_known_variance():
     
 def other_distrib_test():
     SGAseq.other_distrib()
+    

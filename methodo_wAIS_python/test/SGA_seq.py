@@ -1,5 +1,7 @@
 import numpy as np
 from kullback_leibler.compare_methods import compare_sga_methods
+from kullback_leibler.sga_sequential import sga_kullback_leibler_likelihood
+from benchmark.show_error_graph import show_error_graph
 from typing import Optional
 from distribution_family.normal_family import NormalFamily
 from distribution_family.binomial_family import BinomialFamily
@@ -7,7 +9,11 @@ from distribution_family.exponential_family import ExponentialFamily
 from distribution_family.weibull_family import WeibullFamily
 from distribution_family.student_family import StudentFamily
 from distribution_family.logistic_family import LogisticFamily
-
+from general.stochastic_gradient_descent import gradient_descent
+from kullback_leibler.L_gradient.grad_importance_sampling import compute_grad_L_estimator_importance_sampling
+from kullback_leibler.L_gradient.grad_importance_sampling import compute_grad_L_estimator_importance_sampling as K_grad_L
+from benchmark.combine_error_graphs import combine_error_graph
+from renyi_alpha_divergence.renyi_importance_sampling_gradient_estimator import compute_grad_L_estimator_importance_sampling as R_grad_L, give_estimator
 
 def mean_seq(
     var_init, 
@@ -135,3 +141,307 @@ def other_distrib(step = 0.5):
     # binom_target = BinomialFamily(20,0.35)
     # binom_initial = BinomialFamily(7,0.8)
     # compare_sga_methods(f_target=binom_target, q_init=binom_initial, nb_drawn_samples=N, nb_stochastic_choice=u, step=eta_0, iter_limit=max_iter, max_L_gradient_norm = 50)
+
+# la méthode généralisée marche bien
+
+def generalized_code():
+    θ_target_array  = np.array([1,1])
+    θ_initial_array = np.array([12, 9])
+    
+    target_f = NormalFamily(*θ_target_array)
+    intial_q = NormalFamily(*θ_initial_array)
+    
+    N = 80
+    u = 20
+    
+    res1, graph1 = sga_kullback_leibler_likelihood(target_f, intial_q, N, u, 0.2,  None, ɛ = 1e-5, iter_limit = 1000 ,  benchmark=True, max_L_gradient_norm=50, adaptive = True, weight_in_gradient= False, param_composante = None, show_benchmark_graph=False)
+    
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    res2, graph2 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= compute_grad_L_estimator_importance_sampling,
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="ascent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=50,
+        benchmark=True,
+        show_benchmark_graph=False
+    )
+    
+    # show_error_graph(res2, θ_target_array, θ_initial_array, graph2, N, u, 0.2, 50)
+    combine_error_graph({"specialKL" : res1, "general" : res2}, θ_target_array, θ_initial_array, 
+                        {"specialKL" : graph1, "general" : graph2}, 
+                        {"specialKL" : "#6ab04c", "general" : "#be2edd"},
+                        N, u, 0.2, 50)
+    
+    
+    θ_target_array  = np.array([1,1])
+    θ_initial_array = np.array([5,1])
+    
+    target_f = NormalFamily(*θ_target_array)
+    intial_q = NormalFamily(*θ_initial_array)
+    
+    
+    
+    res1, graph1 = sga_kullback_leibler_likelihood(target_f, intial_q, N, u, 0.2,  None, ɛ = 1e-5, iter_limit = 1000 ,  benchmark=True, max_L_gradient_norm=np.inf, adaptive = True, weight_in_gradient= False, param_composante = 0, show_benchmark_graph=False)
+    
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    res2, graph2 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= compute_grad_L_estimator_importance_sampling,
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="ascent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # show_error_graph(res2, θ_target_array, θ_initial_array, graph2, N, u, 0.2, 50)
+    combine_error_graph({"specialKL" : res1, "general" : res2}, θ_target_array, θ_initial_array, 
+                        {"specialKL" : graph1, "general" : graph2}, 
+                        {"specialKL" : "#6ab04c", "general" : "#be2edd"},
+                        N, u, 0.2, 50)
+    
+    
+def renyi_vs_kullback_knwon_var() -> None:
+    θ_target_array  = np.array([1,1])
+    θ_initial_array = np.array([12, 9])
+    
+    target_f = NormalFamily(*θ_target_array)
+    intial_q = NormalFamily(*θ_initial_array)
+    
+    N = 80
+    u = 20
+        
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    θ_target_array  = np.array([1,1])
+    θ_initial_array = np.array([5,1])
+    
+    target_f = NormalFamily(*θ_target_array)
+    intial_q = NormalFamily(*θ_initial_array)
+    
+    
+    
+    res1, graph1 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= K_grad_L,
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="ascent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )    
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    # Entropie de Hartley
+    res2, graph2 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= give_estimator(0),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="ascent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=50,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    #  entropie de collision
+    res3, graph3 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= give_estimator(2),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # 5
+    res4, graph4 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= give_estimator(5),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # α=30
+    res5, graph5 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= give_estimator(30),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # show_error_graph(res2, θ_target_array, θ_initial_array, graph2, N, u, 0.2, 50)
+    combine_error_graph({"KL" : res1, "α=0" : res2, "α=2" : res3, "α=5" : res4, "α=30" : res5}, θ_target_array, θ_initial_array, 
+                        {"KL" : graph1, "α=0" : graph2, "α=2" : graph3, "α=5" : graph4, "α=30" : graph5}, 
+                        {"KL" : "#6ab04c", "α=0" : "#be2edd", "α=2" : "#0abde3", "α=5" : "#ff9f43", "α=30" :  "#f368e0"},
+                        N, u, 0.2, np.inf)
+    
+def renyi_vs_kullback_unknwon_var() -> None:
+
+    N = 80
+    u = 20
+        
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    θ_target_array  = np.array([7,5])
+    θ_initial_array = np.array([15,9])
+    
+    target_f = NormalFamily(*θ_target_array)
+    intial_q = NormalFamily(*θ_initial_array)
+    
+    
+    
+    res1, graph1 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= K_grad_L,
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="ascent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=50,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= None
+    )    
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    # Entropie de Hartley
+    res2, graph2 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= give_estimator(0),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="ascent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=50,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= None
+    )
+    
+    #  entropie de collision
+    res3, graph3 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= give_estimator(2),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=50,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= None
+    )
+    
+    # α=5
+    res4, graph4 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= give_estimator(5),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=50,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= None
+    )
+    
+    
+    # α=30
+    res5, graph5 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= give_estimator(30),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=50,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= None
+    )
+    
+    
+    # show_error_graph(res2, θ_target_array, θ_initial_array, graph2, N, u, 0.2, 50)
+    combine_error_graph({"KL" : res1, "α=0" : res2, "α=2" : res3, "α=5" : res4, "α=30" : res5}, θ_target_array, θ_initial_array, 
+                        {"KL" : graph1, "α=0" : graph2, "α=2" : graph3, "α=5" : graph4, "α=30" : graph5}, 
+                        {"KL" : "#6ab04c", "α=0" : "#be2edd", "α=2" : "#0abde3", "α=5" : "#ff9f43", "α=30" :  "#f368e0"},
+                        N, u, 0.2, 50)
