@@ -81,7 +81,8 @@ def gradient_descent(
                                         show_benchmark_graph : bool = False,
                                         # specific sub component of parameter of interest
                                         param_composante : Optional[int] = None,
-                                        given_X : Optional[List[float]] = None
+                                        given_X : Optional[List[float]] = None,
+                                        print_theta : bool = False
                                     ) -> Tuple[NDArray, Optional[BenchmarkGraph]]:
     """effectue une stochastic gradient ascent pour le problème d'optimisation de θ suivant le critère de la vraissemblance de Kullback-Leibler
         
@@ -203,12 +204,13 @@ def gradient_descent(
         η_t = update_η(η_t)
         
         #printing every 20 iterations in the console
-        if counter % 20 == 0 :
-            str_theta = f"θ_{counter} = {θ_t}"
-            print(str_theta)
-            debug(logstr(str_theta))
-            debug(logstr(f"η_t+1 = {η_t}"))
-            # todo : one may also implement here a save of the parameter found every 20 iterations, or even better choose a number of iterations before a checkmark (...)
+        if print_theta :
+            if counter % 20 == 0 :
+                str_theta = f"θ_{counter} = {θ_t}"
+                print(str_theta)
+                debug(logstr(str_theta))
+                debug(logstr(f"η_t+1 = {η_t}"))
+                # todo : one may also implement here a save of the parameter found every 20 iterations, or even better choose a number of iterations before a checkmark (...)
         
         """——— Benchmarking ———"""
         # if we desire to benchmark : we build the error graph

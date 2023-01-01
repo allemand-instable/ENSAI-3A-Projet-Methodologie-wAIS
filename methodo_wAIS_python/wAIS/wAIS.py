@@ -38,7 +38,7 @@ def Iₜ( Ψ   : Callable,
     alpha_t = αₜ(π, qₜ, Xₜ)
     S_t = Sₜ(Ψ, qₜ, Xₜ)
     I_t = Iₜ_ᵤₙ + (alpha_t * S_t)
-    print(I_t)
+    # print(I_t)
     return  alpha_t, S_t, I_t, Xₜ
 
 def I(  φ           : Callable, 
@@ -54,7 +54,7 @@ def I(  φ           : Callable,
     qₜ  = q_init.copy()
     I_t = 0
     nₜ = nₜ_policy(0)
-    
+    N_T = 1
     list_n      = []
     list_alpha  = []
     
@@ -74,7 +74,7 @@ def I(  φ           : Callable,
             )
         
     
-    return I_t
+    return I_t/N_T
     
 def weighted_adaptive_importance_sampling(
                                             φ           : Callable,
@@ -87,21 +87,21 @@ def weighted_adaptive_importance_sampling(
     numerator =I( φ= φ , π = π, q_init = q_init, nₜ_policy = nₜ_policy, T = T, update_params =update_params )
     denominator = I( φ = lambda x : 1 , π = π, q_init = q_init, nₜ_policy = nₜ_policy, T = T, update_params = update_params)
     
-    print("\n\nnum et denum")
-    print(numerator)
-    print(denominator)
-    print("\n\n")
+    # print("\n\nnum et denum")
+    # print(numerator)
+    # print(denominator)
+    # print("\n\n")
     
     return  numerator/ denominator
 
 
 
 default_params_KL = dict(
-    frequency = 5,
+    frequency = 6,
     # function to be computed
     gradient_descent__compute_grad_L_importance_sampling = KL_gradL,
     # gradient ascent parameters
-    gradient_descent__step = 0.2,
+    gradient_descent__step = 0.3,
     gradient_descent__iter_limit = 1,
     # other parameters
     gradient_descent__method = "ascent",
@@ -115,12 +115,12 @@ default_params_KL = dict(
 )
 
 default_params_R = dict(
-    frequency = 5,
+    frequency = 6,
     # function to be computed
-    gradient_descent__compute_grad_L_importance_sampling = R_gradL(5),
+    gradient_descent__compute_grad_L_importance_sampling = R_gradL(2),
     # gradient ascent parameters
-    gradient_descent__step = 0.2,
-    gradient_descent__iter_limit = 5,
+    gradient_descent__step = 0.3,
+    gradient_descent__iter_limit = 1,
     # other parameters
     gradient_descent__method = "descent",
     gradient_descent__update_η = lambda x : x,

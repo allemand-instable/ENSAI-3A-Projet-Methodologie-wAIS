@@ -4,6 +4,8 @@ from distribution_family.uniform_family import UniformFamily
 import numpy as np
 import kullback_leibler.L_gradient.grad_importance_sampling as kl_grad_is
 import renyi_alpha_divergence.renyi_importance_sampling_gradient_estimator as r_grad_is
+import plotly.express as plx
+from numpy import mean, median, std, var
 
 q_init = NormalFamily(5, 2)
 
@@ -28,27 +30,38 @@ def main():
     
     A = randint(-1, 4)
     B = A + randint(4, 7)
-    π = UniformFamily(A, B)
     def φ(x) : 
         return   P(x, a, b, c)
     
     print(f"∫P(u)du = {int_P(A,B,a,b,c)}")
     
     print(A, B)
-    pi = UniformFamily(A,B)
+    pi = NormalFamily(-7,9)
     
     print(pi.sample(50))
     
-    approx_int1 = weighted_adaptive_importance_sampling(lambda x : φ(x)/pi.density(x), pi, UniformFamily(-10,10), default_params_KL)
     
+    int1 = []
+    int2 = []
     
-    approx_int2 = weighted_adaptive_importance_sampling(lambda x : φ(x)/pi.density(x), pi, UniformFamily(-10,15), default_params_R)
+    for k in range(200):
+        approx_int1 = weighted_adaptive_importance_sampling(lambda x : x, pi, NormalFamily(-3,7), default_params_KL)
     
-    print("———————————————————————————————————————")
-    print(f"∫P(u)du = {int_P(A,B,a,b,c)}")
-    print(f"approx_int = {approx_int1}")
-    print("———————————————————————————————————————")
-    print("———————————————————————————————————————")
-    print(f"∫P(u)du = {int_P(A,B,a,b,c)}")
-    print(f"approx_int = {approx_int2}")
-    print("———————————————————————————————————————")
+        approx_int2 = weighted_adaptive_importance_sampling(lambda x : x, pi, NormalFamily(-3,7), default_params_R)
+    
+        int1.append(approx_int1)
+        int2.append(approx_int2)
+        
+    print(int1)
+    print(int2)
+    
+    print("moyennes :")
+    print(np.array(int1).mean())
+    print(np.array(int2).mean())
+    
+    print("std :")
+    print(np.array(int1).std())
+    print(np.array(int2).std())
+    
+    plx.box(x = kl, title="KL").add_vline(mean(int1)).show()
+    plx.box(x = autre, title="Renyi").add_vline(mean(int2)).show()
