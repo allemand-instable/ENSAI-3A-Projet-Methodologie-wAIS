@@ -4,6 +4,7 @@ from typing import Callable
 
 def get_density_fcn(f : DistributionFamily | Callable) -> Callable:
     if isinstance(f, DistributionFamily):
+        # print(f.parameters)
         f_fcn = f.density
     elif isinstance(f, Callable):
         f_fcn = f
@@ -21,4 +22,4 @@ def squared_relative_distance(  p : DistributionFamily | Callable,
     p_fcn = get_density_fcn(p)
     q_fcn = get_density_fcn(q)
     rapport = p_fcn(x)/q_fcn(x)
-    return (rapport - 1)**2
+    return (rapport - 1)**2 + 1e-7

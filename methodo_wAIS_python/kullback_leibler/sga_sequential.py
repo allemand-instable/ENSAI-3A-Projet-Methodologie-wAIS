@@ -170,21 +170,21 @@ def sga_kullback_leibler_likelihood(    # distributions
             if weight_in_gradient :
                 grad_L_estimator = compute_grad_L_estimator_adaptive(f_target, q_t, 
                                                             θ_t, 
-                                                            nb_stochastic_choice,
+                                                            # nb_stochastic_choice,
                                                             max_L_gradient_norm, 
                                                             X_sampled_from_uniform,
                                                             param_composante)
             else :
                 grad_L_estimator = compute_grad_L_estimator_importance_sampling(f_target, q_t, q_t,
                                                             θ_t, 
-                                                            nb_stochastic_choice,
+                                                            # nb_stochastic_choice,
                                                             max_L_gradient_norm, 
                                                             X_sampled_from_uniform,
                                                             param_composante)
         else :
             grad_L_estimator = compute_grad_L_estimator_importance_sampling(f_target, q_t, q_init,
                                                         θ_t, 
-                                                        nb_stochastic_choice,
+                                                        # nb_stochastic_choice,
                                                         max_L_gradient_norm, 
                                                         X_sampled_from_uniform,
                                                         param_composante)

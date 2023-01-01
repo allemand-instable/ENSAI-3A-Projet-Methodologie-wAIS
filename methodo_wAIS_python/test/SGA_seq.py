@@ -13,7 +13,7 @@ from general.stochastic_gradient_descent import gradient_descent
 from kullback_leibler.L_gradient.grad_importance_sampling import compute_grad_L_estimator_importance_sampling
 from kullback_leibler.L_gradient.grad_importance_sampling import compute_grad_L_estimator_importance_sampling as K_grad_L
 from benchmark.combine_error_graphs import combine_error_graph
-from renyi_alpha_divergence.renyi_importance_sampling_gradient_estimator import compute_grad_L_estimator_importance_sampling as R_grad_L, give_estimator
+from renyi_alpha_divergence.renyi_importance_sampling_gradient_estimator import compute_grad_L_estimator_importance_sampling as R_grad_L, renyi_gradL
 
 def mean_seq(
     var_init, 
@@ -204,7 +204,7 @@ def generalized_code():
         iter_limit=1000,
         adaptive=True,
         ɛ=1e-5,
-        max_L_gradient_norm=np.inf,
+        max_L_gradient_norm=50,
         benchmark=True,
         show_benchmark_graph=False,
         param_composante= 0
@@ -370,7 +370,7 @@ def renyi_vs_kullback_unknwon_var() -> None:
     res2, graph2 = gradient_descent(
         f_target= target_f,
         q_init= intial_q,
-        compute_grad_L_importance_sampling= give_estimator(0),
+        compute_grad_L_importance_sampling= renyi_gradL(0),
         nb_drawn_samples=N,
         nb_stochastic_choice=u,
         step= 0.2,
@@ -388,7 +388,7 @@ def renyi_vs_kullback_unknwon_var() -> None:
     res3, graph3 = gradient_descent(
         f_target= target_f,
         q_init= intial_q,
-        compute_grad_L_importance_sampling= give_estimator(2),
+        compute_grad_L_importance_sampling= renyi_gradL(2),
         nb_drawn_samples=N,
         nb_stochastic_choice=u,
         step= 0.2,
@@ -406,7 +406,7 @@ def renyi_vs_kullback_unknwon_var() -> None:
     res4, graph4 = gradient_descent(
         f_target= target_f,
         q_init= intial_q,
-        compute_grad_L_importance_sampling= give_estimator(5),
+        compute_grad_L_importance_sampling= renyi_gradL(5),
         nb_drawn_samples=N,
         nb_stochastic_choice=u,
         step= 0.2,
@@ -425,7 +425,7 @@ def renyi_vs_kullback_unknwon_var() -> None:
     res5, graph5 = gradient_descent(
         f_target= target_f,
         q_init= intial_q,
-        compute_grad_L_importance_sampling= give_estimator(30),
+        compute_grad_L_importance_sampling= renyi_gradL(30),
         nb_drawn_samples=N,
         nb_stochastic_choice=u,
         step= 0.2,

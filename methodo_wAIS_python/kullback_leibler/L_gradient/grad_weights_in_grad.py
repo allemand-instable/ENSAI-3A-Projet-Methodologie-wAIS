@@ -13,7 +13,6 @@ from logging import info, debug, warn, error
 def compute_grad_L_estimator_adaptive(  f_target : DistributionFamily, 
                                         q_t : DistributionFamily, 
                                         θ_t : NDArray, 
-                                        nb_stochastic_choice : int,
                                         max_L_gradient_norm : int | float, 
                                         X_sampled_from_uniform : List[float],
                                         param_composante : Optional[int] = None
@@ -23,6 +22,9 @@ def compute_grad_L_estimator_adaptive(  f_target : DistributionFamily,
     ω_θ = f / q_θ
     on a donc ̂𝛁L = 1/n⋅∑ [𝛁_θ]( ω_θ × log(q_θ) )[X_i]
     """
+    
+    nb_stochastic_choice = len(X_sampled_from_uniform)
+    
     def ω(x,θ) -> float:
         f_val = f_target.density(x)
         q_val = q_t.density_fcn(x, θ)

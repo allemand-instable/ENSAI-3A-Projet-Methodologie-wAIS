@@ -7,14 +7,12 @@ from utils.log import logstr
 from logging import info, debug, warn, error
 from utils.print_array_as_vector import get_vector_str
 
-
-
+from copy import deepcopy
+import numpy as np
 
 def initialisation(q : DistributionFamily, 
                    ɛ : float, 
                    θ_0 : Optional[NDArray], 
-                   N : int, 
-                   𝛾 : float, 
                    η_0 : float, 
                    benchmark : bool, 
                    ) -> ParamsInitiaux:
@@ -77,12 +75,7 @@ def initialisation(q : DistributionFamily,
     norm_grad_L = (ɛ + 1)
     
     X = []
-    
-    debug(logstr(
-        f"\nη_t = {η_t}\nθ_t = {θ_t}\n𝛾 = {𝛾}\nN = {N}\n"
-                ))
-    
-    #! importance sampling selon q(θ_0)
+        #! importance sampling selon q(θ_0)
     q_0 = q.copy()
         
     
@@ -97,3 +90,24 @@ def initialisation(q : DistributionFamily,
     state = [False for k in range(3)]
     
     return η_t, θ_t, norm_grad_L, X, q_0, benchmark_graph, state
+
+
+def benchmark_init(benchmark_graph, f_target : DistributionFamily, θ_t : NDArray):
+    # useful for computing error
+    if benchmark_graph is not None :
+        target : NDArray = f_target.parameters_list()
+        theta_init = deepcopy(θ_t)
+    else :
+        target = np.array([])
+        theta_init = np.array([])
+    
+    # adding the initial θ₀ to the benchmark graph
+    if benchmark_graph is not None :
+        benchmark_graph[0].append(0)
+        for k in range(len(θ_t)) :
+                # we add the relative error between θ_t and θ_target
+                d_k = np.abs((θ_t[k] - target[k])/(target[k] + 1e-4))
+                #####################################################
+                benchmark_graph[1+k].append(d_k)
+    
+    return target, theta_init

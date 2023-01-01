@@ -4,7 +4,9 @@ from numpy.typing import NDArray
 
 class DummyFamily(DistributionFamily, metaclass=ABCMeta):
     def __init__(self) -> None:
-        """on évite :
+        """DistributionFamily meant to only define a density
+        
+        on évite :
         
         if len(θ) == 0
         

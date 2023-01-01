@@ -1,9 +1,12 @@
 import test.SGA_seq as SGAseq
 import test.wAIS as wAIS
+import test.target as target
 
 def main():
     # SGAseq.generalized_code()
-    integral_test_polynomial()
+    # integral_test_polynomial()
+    # target.main()
+    wAIS.main()
     
 def integral_test_polynomial():
     # wAIS.main()

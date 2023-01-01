@@ -16,10 +16,10 @@ def compute_grad_L_estimator_importance_sampling(
                                 q_t : DistributionFamily, 
                                 q_importance_sampling : DistributionFamily,
                                 θ_t : NDArray, 
-                                nb_stochastic_choice : int,
+                                # nb_stochastic_choice : int,
                                 max_L_gradient_norm : int | float, 
                                 X_sampled_from_uniform : List[float],
-                                param_composante : Optional[int] = None
+                                param_composante : Optional[int] = None,
                              ) -> NDArray:
     """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling
     
@@ -27,6 +27,8 @@ def compute_grad_L_estimator_importance_sampling(
     
     on a donc 𝛁̂L = 1/n⋅∑ [𝛁_θ]( ω × log(q_θ) )[X_i]
                  = 1/n⋅∑  ω[X_i] × [𝛁_θ]log(q_θ)[X_i]"""
+    nb_stochastic_choice = len(X_sampled_from_uniform)             
+    
     def ω(x,θ) -> float:
         f_val = f_target.density(x)
         q_val = q_importance_sampling.density_fcn(x, θ)

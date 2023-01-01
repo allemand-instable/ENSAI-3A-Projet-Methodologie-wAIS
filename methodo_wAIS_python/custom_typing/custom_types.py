@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Any, Callable, Optional, List, Dict, Tuple, TypedDict
+from typing import Any, Callable, Literal, Optional, List, Dict, Tuple, TypedDict
 from numpy.typing import NDArray
 from numpy.typing import ArrayLike
 from typing import Protocol, Union
@@ -85,9 +85,29 @@ class ImportanceSamplingGradientEstimation(Protocol):
                 q_t : DistributionFamily, 
                 q_importance_sampling : DistributionFamily,
                 θ_t : NDArray, 
-                nb_stochastic_choice : int,
                 max_L_gradient_norm : int | float, 
                 X_sampled_from_uniform : List[float],
-                param_composante : Optional[int]
+                param_composante : Optional[int],
                 )    ->  NDArray: ...
     
+class UpdateParameters(TypedDict):
+    frequency : int
+    
+    """SGD"""
+    # function to be computed
+    gradient_descent__compute_grad_L_importance_sampling : ImportanceSamplingGradientEstimation
+    # stochastic part
+    # gradient_descent__nb_drawn_samples : int 
+    # gradient_descent__nb_stochastic_choice : int 
+    # gradient ascent parameters
+    gradient_descent__step : float 
+    gradient_descent__iter_limit : int
+    # other parameters
+    gradient_descent__method : Literal["descent"] | Literal["ascent"]
+    gradient_descent__update_η : Callable
+
+    gradient_descent__max_L_gradient_norm : int | float
+    gradient_descent__adaptive : bool
+    # specific sub component of parameter of interest
+    gradient_descent__param_composante : Optional[int]
+    gradient_descent__given_X : Optional[List[float]]

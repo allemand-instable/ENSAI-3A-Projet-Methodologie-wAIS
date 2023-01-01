@@ -18,13 +18,12 @@ def compute_grad_L_estimator_importance_sampling(
                                 q_t : DistributionFamily, 
                                 q_importance_sampling : DistributionFamily,
                                 θ_t : NDArray, 
-                                nb_stochastic_choice : int,
                                 max_L_gradient_norm : int | float, 
                                 X_sampled_from_uniform : List[float],
                                 #
                                 α : float,
                                 #
-                                param_composante : Optional[int] = None
+                                param_composante : Optional[int] = None,
                              ) -> NDArray:
     """calcul de l'estimateur de 𝛁L(θ) obtenu par la loi des grands nombres et la méthode d'Importance Sampling
     
@@ -35,6 +34,9 @@ def compute_grad_L_estimator_importance_sampling(
     
     on a donc 𝛁̂L = 1/n⋅∑  ω[X_i] × h(θ)[X_i]
    """
+    
+    nb_stochastic_choice = len(X_sampled_from_uniform)
+   
     def rapport(α : float, f : DistributionFamily, q_θ : DistributionFamily, x) -> float:
        return ( f.density(x) / q_θ.density(x) )**(1-α)
    
@@ -65,17 +67,18 @@ def compute_grad_L_estimator_importance_sampling(
 
     grad_L_estimator : NDArray = np.add.reduce( grad_L_list )/nb_stochastic_choice
 
+    
+    
     return grad_L_estimator
 
 
-def give_estimator(α : float) -> ImportanceSamplingGradientEstimation:
+def renyi_gradL(α : float) -> ImportanceSamplingGradientEstimation:
     
     def fcn(                    
             f_target : DistributionFamily, 
             q_t : DistributionFamily, 
             q_importance_sampling : DistributionFamily,
             θ_t : NDArray, 
-            nb_stochastic_choice : int,
             max_L_gradient_norm : int | float, 
             X_sampled_from_uniform : List[float],
             #
@@ -86,7 +89,6 @@ def give_estimator(α : float) -> ImportanceSamplingGradientEstimation:
                                                             q_t, 
                                                             q_importance_sampling,
                                                             θ_t, 
-                                                            nb_stochastic_choice,
                                                             max_L_gradient_norm, 
                                                             X_sampled_from_uniform,
                                                             α,

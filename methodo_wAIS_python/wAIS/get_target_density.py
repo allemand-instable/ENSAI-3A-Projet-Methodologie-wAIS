@@ -1,24 +1,26 @@
 from distribution_family.distribution_family import DistributionFamily
 from distribution_family.dummy_distribution import DummyFamily
 from typing import Callable
+from wAIS.squared_relative_distance import get_density_fcn
+import numpy as np
 
-def get_target_density(     π : Callable,
-                            φ : Callable,
-                            I_t : float,
-                            target_π : bool = False
-                       ) -> DistributionFamily :
-
-    if target_π is True :
-        fcn = lambda x : π(x)
-    else :
-        fcn = lambda x : π(x) * abs( φ(x) - I_t )
-    
-    class TargetDensity(DummyFamily):
-        def __init__(self) -> None:
+class TargetDensity(DummyFamily):
+        def __init__(self, function : Callable) -> None:
+            self.function = function
             super().__init__() 
         def density(self, x: float) -> float:
-            return fcn(x)
+            return self.function(x)
+
+
+def get_target_density(     π : DistributionFamily,
+                            φ : Callable,
+                            I_t : float,
+                       ) -> DistributionFamily :
+    """PORTIER DELYON [B.1]
     
-    f_target = TargetDensity()
-    
+    derived from asymptotic variance :
+    u*Vu = ∫ q⁻¹ π²(φ-I)²
+    """
+    fcn = lambda x : π.density(x) * abs( φ(x) - I_t )
+    f_target = TargetDensity(fcn)
     return f_target

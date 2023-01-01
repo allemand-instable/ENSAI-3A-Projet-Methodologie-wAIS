@@ -16,7 +16,7 @@ from utils.log import logstr
 from logging import info, debug, warn, error
 from utils.print_array_as_vector import get_vector_str
 # Kullback Leibler related functions
-from general.parameters_initialisation import initialisation
+from general.parameters_initialisation import benchmark_init, initialisation
 
 
 def cond_n_de_suite__update_state(cond, state : list[bool]) -> list[bool]:
@@ -34,6 +34,29 @@ def cond_n_de_suite__update_state(cond, state : list[bool]) -> list[bool]:
     # all true
     return new_state
 
+def get_X_sampled_from_uniform(adaptive,q_t, nb_stochastic_choice, nb_drawn_samples, X, given_X) -> List[float] | None:
+    if not given_X :
+    # Adaptive ⇒ we sample from the new distribution at each iteration
+        if adaptive :
+            new_sample : list | None = q_t.sample(nb_drawn_samples)
+            # la méthode sample peut retourner un None en cas de problème, on doit gérer le cas
+            if new_sample is None :
+                raise ValueError(f"could not sample from q_t \n(params = {q_t.parameters})\nnew_sample = None")
+            else :
+                X = new_sample + X
+
+        # non stochastic gradient ascent ⇒ use all X
+        if nb_stochastic_choice == nb_drawn_samples :
+            X_sampled_from_uniform = X
+        # stochastic gradient descent ⇒ use a subset of X
+        else :
+            obs_tirées = nprd.choice(range(len(X)), nb_stochastic_choice, replace=False)
+            X_sampled_from_uniform = [  X[i] for i in obs_tirées  ]
+            return X_sampled_from_uniform
+    else :
+        return given_X
+
+
 
 def gradient_descent(
                                         # distributions
@@ -42,8 +65,8 @@ def gradient_descent(
                                         # function to be computed
                                         compute_grad_L_importance_sampling : ImportanceSamplingGradientEstimation,
                                         # stochastic part
-                                        nb_drawn_samples : int, 
-                                        nb_stochastic_choice : int, 
+                                        nb_drawn_samples : Optional[int], 
+                                        nb_stochastic_choice : Optional[int], 
                                         # gradient ascent parameters
                                         step : float, 
                                         θ_0 : Optional[NDArray] = None, 
@@ -116,20 +139,13 @@ def gradient_descent(
     """
     
     """Initialisation"""
-    η_t, θ_t, norm_grad_L, X, q_t, benchmark_graph, state = initialisation(q_init, ɛ, θ_0, nb_drawn_samples, nb_stochastic_choice, step, benchmark)
+    η_t, θ_t, norm_grad_L, X, q_t, benchmark_graph, state = initialisation(q_init, ɛ, θ_0, step, benchmark)
     
-    
-    # useful for computing error
-    if benchmark_graph is not None :
-        target : NDArray = f_target.parameters_list()
-        theta_init = deepcopy(θ_t)
-    else :
-        target = np.array([])
-        theta_init = np.array([])
-    
+    target, theta_init = benchmark_init(benchmark_graph, f_target, θ_t)
     
     # How samples are being drawn depending on whether importance sampling is from a fixed distribution or adaptive
     if not given_X :
+        X_sampled_from_uniform = []
         if not adaptive :
             X = q_init.sample(nb_drawn_samples)
             if X is None :
@@ -139,15 +155,8 @@ def gradient_descent(
             X = []
     else :
         X = given_X
+        X_sampled_from_uniform = given_X
     
-    # adding the initial θ₀ to the benchmark graph
-    if benchmark_graph is not None :
-        benchmark_graph[0].append(0)
-        for k in range(len(θ_t)) :
-                # we add the relative error between θ_t and θ_target
-                d_k = np.abs((θ_t[k] - target[k])/(target[k] + 1e-4))
-                #####################################################
-                benchmark_graph[1+k].append(d_k)
     
     
     """MAIN LOOP"""
@@ -158,37 +167,22 @@ def gradient_descent(
             debug(logstr(f"norm_grad_L = {norm_grad_L}"))
             break
         
-        # Adaptive ⇒ we sample from the new distribution at each iteration
-        if not given_X :
-            if adaptive :
-                new_sample : list | None = q_t.sample(nb_drawn_samples)
-                # la méthode sample peut retourner un None en cas de problème, on doit gérer le cas
-                if new_sample is None :
-                    raise ValueError(f"could not sample from q_t \n(params = {q_t.parameters})\nnew_sample = None")
-                else :
-                    X = new_sample + X
-        
-        # non stochastic gradient ascent ⇒ use all X
-        if nb_stochastic_choice == nb_drawn_samples :
-            X_sampled_from_uniform = X
-        # stochastic gradient descent ⇒ use a subset of X
-        else :
-            obs_tirées = nprd.choice(range(len(X)), nb_stochastic_choice, replace=False)
-            X_sampled_from_uniform = [  X[i] for i in obs_tirées  ]
-        
+        X_sampled_from_uniform = get_X_sampled_from_uniform(adaptive,q_t, nb_stochastic_choice, nb_drawn_samples, X, given_X)
+        if X_sampled_from_uniform is None :
+            raise ValueError("X_sampled_from_uniform is None")
         
         # computation of an estimator of 𝛁L
         if adaptive :
             grad_L_estimator = compute_grad_L_importance_sampling(f_target, q_t, q_t,
                                                         θ_t, 
-                                                        nb_stochastic_choice,
+                                                        # nb_stochastic_choice,
                                                         max_L_gradient_norm, 
                                                         X_sampled_from_uniform,
                                                         param_composante)
         else :
             grad_L_estimator = compute_grad_L_importance_sampling(f_target, q_t, q_init,
                                                         θ_t, 
-                                                        nb_stochastic_choice,
+                                                        # nb_stochastic_choice,
                                                         max_L_gradient_norm, 
                                                         X_sampled_from_uniform,
                                                         param_composante)
@@ -237,7 +231,7 @@ def gradient_descent(
                          θ_init = theta_init,
                          benchmark_graph = benchmark_graph,
                          # subtitle
-                         nb_drawn_samples = nb_drawn_samples, 
+                         nb_drawn_samples = len(X_sampled_from_uniform), 
                          nb_stochastic_choice = nb_stochastic_choice, 
                          step = step, 
                          max_L_gradient_norm= max_L_gradient_norm
