@@ -44,17 +44,16 @@ def get_X_sampled_from_uniform(adaptive,q_t, nb_stochastic_choice, nb_drawn_samp
                 raise ValueError(f"could not sample from q_t \n(params = {q_t.parameters})\nnew_sample = None")
             else :
                 X = new_sample + X
-
-        # non stochastic gradient ascent ⇒ use all X
-        if nb_stochastic_choice == nb_drawn_samples :
-            X_sampled_from_uniform = X
-        # stochastic gradient descent ⇒ use a subset of X
-        else :
-            obs_tirées = nprd.choice(range(len(X)), nb_stochastic_choice, replace=False)
-            X_sampled_from_uniform = [  X[i] for i in obs_tirées  ]
-            return X_sampled_from_uniform
     else :
-        return given_X
+        X = given_X
+    # non stochastic gradient ascent ⇒ use all X
+    if nb_stochastic_choice == nb_drawn_samples :
+        X_sampled_from_uniform = X
+    # stochastic gradient descent ⇒ use a subset of X
+    else :
+        obs_tirées = nprd.choice(range(len(X)), nb_stochastic_choice, replace=False)
+        X_sampled_from_uniform = [  X[i] for i in obs_tirées  ]
+        return X_sampled_from_uniform
 
 
 
@@ -156,7 +155,6 @@ def gradient_descent(
             X = []
     else :
         X = given_X
-        X_sampled_from_uniform = given_X
     
     
     

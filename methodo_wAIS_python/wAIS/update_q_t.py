@@ -1,3 +1,4 @@
+import time
 from custom_typing.custom_types import ImportanceSamplingGradientEstimation, UpdateParameters
 from general.stochastic_gradient_descent import gradient_descent
 from general.importance_sampling import importance_sampling_given_sample
@@ -48,6 +49,7 @@ def update_qₜ(
         
         
         # gradient descent
+        start = time.process_time()
         θₜ , _ = gradient_descent(
                         given_X  = Xₜ,
                         # distributions
@@ -57,7 +59,7 @@ def update_qₜ(
                         compute_grad_L_importance_sampling =update_params["gradient_descent__compute_grad_L_importance_sampling"],
                         # stochastic part
                         nb_drawn_samples =None,
-                        nb_stochastic_choice =None, 
+                        nb_stochastic_choice =update_params["gradient_descent__nb_stochastic_choice"], 
                         # gradient ascent parameters
                         step =update_params["gradient_descent__step"], 
                         θ_0 =None, 
@@ -73,5 +75,5 @@ def update_qₜ(
                         # specific sub component of parameter of interest
                         param_composante = update_params["gradient_descent__param_composante"],
         )
-        
+        print(f"sga_time : {time.process_time() - start}")
         qₜ.update_parameters(θₜ)

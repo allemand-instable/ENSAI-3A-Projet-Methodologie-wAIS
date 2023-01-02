@@ -5,8 +5,9 @@ import test.target as target
 def main():
     # SGAseq.generalized_code()
     # integral_test_polynomial()
-    # target.main()
-    wAIS.main()
+    # wAIS.main()
+    # wAIS.graph()
+    wAIS.lol()
     
 def integral_test_polynomial():
     # wAIS.main()

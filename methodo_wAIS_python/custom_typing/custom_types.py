@@ -98,7 +98,7 @@ class UpdateParameters(TypedDict):
     gradient_descent__compute_grad_L_importance_sampling : ImportanceSamplingGradientEstimation
     # stochastic part
     # gradient_descent__nb_drawn_samples : int 
-    # gradient_descent__nb_stochastic_choice : int 
+    gradient_descent__nb_stochastic_choice : int 
     # gradient ascent parameters
     gradient_descent__step : float 
     gradient_descent__iter_limit : int

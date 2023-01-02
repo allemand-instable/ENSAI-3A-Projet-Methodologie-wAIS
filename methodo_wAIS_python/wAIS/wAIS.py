@@ -1,3 +1,4 @@
+import time
 from typing import Callable, List, Tuple, Dict
 from distribution_family.distribution_family import DistributionFamily
 import numpy as np
@@ -32,13 +33,14 @@ def Iₜ( Ψ   : Callable,
         nₜ      : int,
         Iₜ_ᵤₙ   : float = 0. 
         )  -> Tuple[float, float, float, List]:
+    start = time.process_time()
     Xₜ = qₜ.sample(nₜ)
     if Xₜ is None :
         raise TypeError("unable to generate X_t")
     alpha_t = αₜ(π, qₜ, Xₜ)
     S_t = Sₜ(Ψ, qₜ, Xₜ)
     I_t = Iₜ_ᵤₙ + (alpha_t * S_t)
-    # print(I_t)
+    print(f"time I_t : {time.process_time() - start}")
     return  alpha_t, S_t, I_t, Xₜ
 
 def I(  φ           : Callable, 
@@ -97,11 +99,11 @@ def weighted_adaptive_importance_sampling(
 
 
 default_params_KL = dict(
-    frequency = 6,
+    frequency = 5,
     # function to be computed
     gradient_descent__compute_grad_L_importance_sampling = KL_gradL,
     # gradient ascent parameters
-    gradient_descent__step = 0.3,
+    gradient_descent__step = 0.45,
     gradient_descent__iter_limit = 1,
     # other parameters
     gradient_descent__method = "ascent",
@@ -109,17 +111,18 @@ default_params_KL = dict(
     gradient_descent__max_L_gradient_norm = 50,
     gradient_descent__adaptive = True,
     # specific sub component of parameter of interest
-    gradient_descent__param_composante = None,
+    gradient_descent__param_composante = 0,
     # todo
-    gradient_descent__given_X = None
+    gradient_descent__given_X = None,
+    gradient_descent__nb_stochastic_choice = 50
 )
 
 default_params_R = dict(
-    frequency = 6,
+    frequency = 5,
     # function to be computed
-    gradient_descent__compute_grad_L_importance_sampling = R_gradL(2),
+    gradient_descent__compute_grad_L_importance_sampling = R_gradL(15),
     # gradient ascent parameters
-    gradient_descent__step = 0.3,
+    gradient_descent__step = 0.45,
     gradient_descent__iter_limit = 1,
     # other parameters
     gradient_descent__method = "descent",
@@ -127,7 +130,8 @@ default_params_R = dict(
     gradient_descent__max_L_gradient_norm = 50,
     gradient_descent__adaptive = True,
     # specific sub component of parameter of interest
-    gradient_descent__param_composante = None,
+    gradient_descent__param_composante = 0,
     # todo
-    gradient_descent__given_X = None
+    gradient_descent__given_X = None,
+    gradient_descent__nb_stochastic_choice = 50
 )
