@@ -113,6 +113,16 @@ def known_variance(var_init,
             "θ_initial" : θ_initial}
 
 
+def student_and_normal():
+    max_iter = 5000
+    N = 80
+    u = 20
+    eta_0 = 0.2
+    student_t = StudentFamily(2)
+    normal_i = NormalFamily(5, 1)
+    sga_kullback_leibler_likelihood(student_t, normal_i, N, u, eta_0, None,  1e-7, max_iter , False, 50, False, False, param_composante = None)
+
+
 def other_distrib(step = 0.5):
     max_iter = 1000
     N = 80
@@ -445,3 +455,213 @@ def renyi_vs_kullback_unknwon_var() -> None:
                         {"KL" : graph1, "α=0" : graph2, "α=2" : graph3, "α=5" : graph4, "α=30" : graph5}, 
                         {"KL" : "#6ab04c", "α=0" : "#be2edd", "α=2" : "#0abde3", "α=5" : "#ff9f43", "α=30" :  "#f368e0"},
                         N, u, 0.2, 50)
+    
+
+
+def renyi_vs_kullback_expo() -> None:
+
+    N = 80
+    u = 20
+        
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    θ_target_array  = np.array([3])
+    θ_initial_array = np.array([6])
+    
+    target_f = ExponentialFamily(*θ_target_array)
+    intial_q = ExponentialFamily(*θ_initial_array)
+    
+    
+    
+    res1, graph1 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= K_grad_L,
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="ascent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )    
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    
+    #  entropie de collision
+    res3, graph3 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= renyi_gradL(2),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # 5
+    res4, graph4 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= renyi_gradL(5),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # α=30
+    res5, graph5 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= renyi_gradL(20),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # show_error_graph(res2, θ_target_array, θ_initial_array, graph2, N, u, 0.2, 50)
+    combine_error_graph({"KL" : res1, "α=2" : res3, "α=5" : res4, "α=20" : res5}, θ_target_array, θ_initial_array, 
+                        {"KL" : graph1, "α=2" : graph3, "α=5" : graph4, "α=20" : graph5}, 
+                        {"KL" : "#6ab04c", "α=0" : "#be2edd", "α=2" : "#0abde3", "α=5" : "#ff9f43", "α=20" :  "#f368e0"},
+                        N, u, 0.2, np.inf)
+    
+    
+def renyi_vs_kullback_student() -> None:
+
+    N = 80
+    u = 20
+        
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    θ_target_array  = np.array([12])
+    θ_initial_array = np.array([3])
+    
+    target_f = ExponentialFamily(*θ_target_array)
+    intial_q = ExponentialFamily(*θ_initial_array)
+    
+    
+    
+    res1, graph1 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= K_grad_L,
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="ascent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )    
+    # show_error_graph(res1, θ_target_array, θ_initial_array, graph1, N, u, 0.2, 50)
+    
+    
+    #  entropie de collision
+    res3, graph3 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= renyi_gradL(2),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # 5
+    res4, graph4 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= renyi_gradL(5),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # α=30
+    res5, graph5 = gradient_descent(
+        f_target= target_f,
+        q_init= intial_q,
+        compute_grad_L_importance_sampling= renyi_gradL(20),
+        nb_drawn_samples=N,
+        nb_stochastic_choice=u,
+        step= 0.2,
+        method="descent",
+        iter_limit=1000,
+        adaptive=True,
+        ɛ=1e-5,
+        max_L_gradient_norm=np.inf,
+        benchmark=True,
+        show_benchmark_graph=False,
+        param_composante= 0
+    )
+    
+    # show_error_graph(res2, θ_target_array, θ_initial_array, graph2, N, u, 0.2, 50)
+    combine_error_graph(
+        {
+            "KL" : res1, 
+            "α=2" : res3, 
+            "α=5" : res4, 
+            "α=20" : res5
+        }, 
+        θ_target_array, θ_initial_array, 
+        {
+            "KL" : graph1, 
+            "α=2" : graph3, 
+            "α=5" : graph4, 
+            "α=20" : graph5
+        }, 
+        {
+            "KL" : "#6ab04c", 
+            "α=0" : "#be2edd", 
+            "α=2" : "#0abde3", 
+            "α=5" : "#ff9f43", 
+            "α=20" :  "#f368e0"
+        },
+        N, u, 0.2, np.inf
+        )

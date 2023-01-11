@@ -7,7 +7,14 @@ def main():
     # integral_test_polynomial()
     # wAIS.main()
     # wAIS.graph()
-    wAIS.lol()
+    #wAIS.lol()
+    # normal_test()
+    # normal_test_known_variance()
+    # other_distrib_test()
+    
+    #SGAseq.student_and_normal()
+    SGAseq.renyi_vs_kullback_student()
+    SGAseq.renyi_vs_kullback_expo()
     
 def integral_test_polynomial():
     # wAIS.main()
