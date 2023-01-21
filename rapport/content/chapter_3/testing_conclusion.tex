@@ -1,0 +1,13 @@
+\pagebreak
+\section{Conclusion}
+
+The usage of stochastic gradient descent allows estimating integrals efficiently. We explored the usage of two different divergence measures, namely Kullback-Leibler divergence and Rényi's alpha divergence, for  updating the sampling policy toward the optimal one (which is clearly not guaranteed to be from the same family as the sampling distribution). 
+
+\bigskip
+We have tested the behavior of the divergence measures.
+We conclude that for the Gaussian case with known variance, the Kullback-Leiber divergence converges the quickest but suffers from more noise than Rényi's alpha divergence. Rényi's alpha divergence takes more time to converge but provides a more stable and accurate approximation. Our advice is to use the Kullback-Leibler divergence for quick convergence with minimal steps and to choose Rényi's alpha-divergence, if a few more steps can be afforded.
+In the case of unknown variance for a Gaussian target distribution, the Kullback-Leibler divergence converges more rapidly toward the mean, yet, the convergence toward the variance is rather poor compared to the that of Rényi's alpha divergence's approximation. We therefore recommend to use Kullback-Leibler divergence if the parameter or integral of interest is more sensitive to the mean evaluation and Rényi's alpha divergence otherwise. These findings specifically apply in the case of normal distributions. If other distributions are considered, as demonstrated, the behavior of the updating algorithms may greatly differ. Hence, which algorithm is more appropriate heavily depends on the concrete situation.
+
+\bigskip
+
+Finally, the simulations of wAIS demonstrate that the Kullback-Leibler divergence criterion can yield accurate estimates albeit less reliable ones than those of Rényi's divergence criterion. The box-plots (Appendix ~\ref{sim:wais-KL-and-R}) and the MSE table nicely illustrate these findings. Our recommendation is to use Kullback-Leibler divergence as criterion if generating a larger number of estimates can be afforded. However, if generating many estimates is not feasible we recommend using Rényi's divergence which reliably provides decent results.

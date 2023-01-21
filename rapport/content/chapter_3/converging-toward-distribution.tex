@@ -1,9 +1,109 @@
-\subsubsection{Testing the distribution convergence}
+\subsection{Testing the Distribution Convergence}
 
-The normal [fig \ref{sim:normal}] and logistic [fig \ref{sim:logistic}] distributions seem to gain a lot of speed in convergence when using $\displaystyle{\frac 1 n \sum\limits_i \nabla_\theta \left[ \left( \frac{f(x_i)}{q_t(x_i)}\right) \cdot \log q_t(x_i) \right]}$. 
-We are not sure of the mathematical explanation on why it behaves this way, one might consider to derive a result from the fact both distributions are from the quadratic exponential family as described in Gourieux, Montfort and Trognon~\cite{pmle}.
+\subsubsection{Stochastic Gradient Ascent based on the Kullback-Leibler Criterion}
+
+In this section we illustrate the behavior of our algorithms. While their primary purpose is to update the sampling policy in the wAIS framework, we first consider their standalone behavior. We are primarily interested in how the sampling distribution $q$ converges towards the target distribution $f$. 
+
+First, we consider the algorithm based on the Kullback-Leibler criterion. Both, the target density and the sampling policy belong to the family of univariate normal distributions, i.e. $\mathcal{N}(\mu,\sigma^2)$. We fix $f \sim \mathcal{N}(\mu_*,\sigma_*^2)$, initiate $q \sim \mathcal{N}(\mu_0,\sigma_0^2)$ and perform simultaneous updates to $\mu$ and $\sigma^2$ . During each simulation, that is for each given parametrization of $q$ and $f$, we employ a stochastic version of algorithm 1, 2 and 3. That is we transfer the ideas from algorithm \ref{alg:sgaAdaptive} to algorithm \ref{alg:gaIS} to \ref{alg:gaAdaptiveWeight}. In an abuse of notation we will likewise refer to the stochastic versions of the algorithms as algorithm 1, algorithm 2 and algorithm 3. 
+
+Besides, we set the following parameters:
+
+\begin{itemize}
+    \item N = 80: Number of samples which are generated at each iteration
+    \item $\gamma$ = 20: Batch size, i.e. subset of N
+    \item $\eta_0$ = 0.2: Learning rate
+    \item safety\_coeff = 50: Highest admissible value of the gradient norm which circumvents exploding gradients
+\end{itemize} 
+Parameter configurations are also provided on the figures.
+
+Figure \ref{sim:normal} in Appendix A demonstrates the results of the simulation. Namely, we show the relative error curve of the mean (left, i.e. $\theta_0$) and variance (right, i.e. $\theta_1$) for the described setting. 
+Algorithm 1, 2 and 3 are colored in blue, green and orange respectively. 
+Overall, we display three different parametrization, each illustrating a certain type of behavior. 
+They are given by:
+\begin{itemize}
+    \item Scenario 1 - high mean and low variance - $f \sim \mathcal{N}(6.32, 1), q_0 \sim \mathcal{N}(13.92, 3.0)$
+    % %\begin{itemize}
+    %     \item $\theta_0 = \mu$: The classic importance sampling, i.e. algorithm 1 approach performs the worst. Within the 500 iterations depicted, the relative error does not converge but steadily declines at slow pace. Meanwhile algorithm 3 converges the quickest, hovering at an error of ~0 after 100 iterations. Algorithm 3 converges to the true value after approximately 240 iterations.
+    %     \item $\theta_1 = \sigma^2$: Irrespective of the method, the variance surprisingly experiences a stark increase in relative error during the first couple of iterations. Algorithm 3 has the highest peak, but subsequently drops the quickest and achieves the lowest relative error at 1 after roughly 300 iterations. In contrast, algorithm 1 does not recover from the increase and hovers at a relative error of about 4.7. Algorithm 2 does not increase as strongly as algorithm 3 but diminishes less strongly afterwards, without visible convergence. 
+    % %\end{itemize}
+    \item Scenario 2 - low mean and high variance - $f \sim \mathcal{N}(-8.34, 1), q_0 \sim \mathcal{N}(1.54, 9.0)$
+    % \begin{itemize}
+    %     \item $\theta_0 = \mu$: Compared to scenario 1, the different algorithms differ less strongly from each other. While the ranking remains the same, especially algorithm 1 fares much better in this scenario. Besides, algorithm 3 achieves convergence the quickest at roughly 150, while the others do not converge within 500 iterations. 
+    %     \item $\theta_1 = \sigma^2$: Again, the variance increases prior to stagnating as in the case of algorithm 1 or diminishing as seen in algorithm 2 and 3. However, the former does so only at vanishing slow rate and sits at a higher level than algorithm 1 which hovers at a relative error of roughly 10. Only the variance of algorithm 3 shows stronger momentum toward the true value of $\sigma^2$, even though it does not reach convergence within 500 iterations. Hence, the lower bound the relative of the variance remains invisible.
+    % \end{itemize}
+    \item Scenario 3 - medium mean and high variance - $f \sim \mathcal{N}(-0.06, 1), q_0 \sim \mathcal{N}(5.42, 20.0)$
+    % \begin{itemize}
+    %     \item $\theta_0 = \mu$: Algorithm 3 behaves similarly to previous scenarios. The relative error of algorithms 1 and 2 have almost an identical trajectory. They are close to convergence to 0 after 500 iterations. 
+    %     \item $\theta_1 = \sigma^2$: The relative error of algorithm 1 and
+    %     2 runs almost identically, starting out at a value of roughly 19 and only slowly diminishing. Unsurprisingly by now, the relative error of algorithm 3 decreases the quickest. Clearly, no algorithm converges within 500 iterations.
+    % \end{itemize}
+\end{itemize}
+
+The simulations in the scenario of normal target and sampling policy yield the following insights.
+Algorithm \ref{alg:gaAdaptiveWeight} performs the best with respect to the mean, i.e. $\mu$ and the variance, i.e. $\sigma^2$. Not only does algorithm \ref{alg:gaAdaptiveWeight} demonstrate quicker convergence than the other algorithms, but it appears closest to approaching the true value of the parameter in terms of relative error. The standard importance sampling estimate generally lacks behind the other considered algorithms in terms of convergence speed and accuracy. Meanwhile, the adaptive stochastic gradient ascent shows some improvements over algorithm \ref{alg:gaAdaptive}. Generally, the estimation of $\sigma^2$ poses a greater challenge than that of $\mu$. In the considered scenarios, the relative error of the variance is shown to abandon rather favorable initiation values in favor of worse values. Recovery from these abrupt jumps occurs only at slow to moderate pace or not at all. In some cases it increases even further. 
+s \ref{sim:weibull} to \ref{sim:student} of appendix B depict the results for other distributions. Again, algorithm \ref{alg:gaAdaptive} and \ref{alg:gaAdaptiveWeight} provide superior estimates than algorithm 1 in a breadth of scenarios.
+Particularly, in the case of normal [fig \ref{sim:normal}] and logistic [fig \ref{sim:logistic}] distributions, algorithm \ref{alg:gaAdaptiveWeight}, i.e. $\displaystyle{\frac 1 n \sum\limits_i \nabla_\theta \left[ \left( \frac{f(x_i)}{q_t(x_i)}\right) \cdot \log q_t(x_i) \right]}$, seems to gain a lot of speed in convergence.
+Admittedly, we are not able to provide a mathematical reasoning for the superiority of algorithm 3 and why the algorithm performs especially well in the case of normal and logistic distributions.
+Algorithm \ref{alg:gaAdaptiveWeight} implicitly assumes that the following holds: 
+$$\begin{array}{rcl}
+    \nabla_\theta \esperanceloi{f}{h(\theta)}
+    &=& \nabla_\theta \displaystyle\int h(\theta) f \ d\lambda \\
+    &=& \displaystyle\int \nabla_\theta\left[ h(\theta) \cdot f \right] \\
+    &=& \displaystyle\int (\frac{q_\theta}{q_\theta}) \cdot f \ \cdot \nabla_\theta h(\theta) d\lambda 
+    = \esperanceloi{q_\theta}{\left( \frac{f}{q_\theta} \right) \nabla_\theta h(\theta)}
+    \\
+    &=& \displaystyle\int \nabla_\theta\left[ h(\theta) \cdot \frac f {q_\theta} q_\theta \right] d \lambda
+    \\
+    &\underset{???}{\approx}& \displaystyle\int \nabla_\theta\left[ h(\theta) \cdot \frac f {q_\theta}  \right] q_\theta \ d \lambda = \esperanceloi{q_\theta}{\nabla_\theta\left[ h(\theta) \cdot \frac f {q_\theta}  \right]}
+\end{array}
+$$
+
+However, we are unable to verify whether the conditions for inverting the derivative and integral apply. 
+There might be certain distribution families which verify the following property:
+
+$$\nabla_\theta\left[ h(\theta) \cdot \frac f {q_\theta} q_\theta \right] 
+= 
+q_\theta \nabla_\theta\left[ h(\theta) \cdot \frac f {q_\theta} \right] + \underbracket{\left(h(\theta) \cdot \frac f {q_\theta}\right) \nabla_\theta\left[ q_\theta \right]}_{\overset ? =  o \left(q_\theta \nabla_\theta\left[ h(\theta) \cdot \frac f {q_\theta} \right]\right)}
+$$
+
+One may consider deriving an explanation from the fact that both distributions are defined using exponential functions. Even if the logistic distribution does not belong in the exponential family, it might be interesting to look at this rather curious working expression when dealing with the quadratic exponential family as described in Gourieux, Montfort and Trognon~\cite{pmle}.
 
 $$f(x \vert \begin{bmatrix}
     m \\ \Sigma
-\end{bmatrix}) = \exp \left[ A(m, \Sigma) + B(x) + C(m, \Sigma)x + x^* D(m, \Sigma) x \right]$$
+\end{bmatrix}) = \exp \left[ A(m, \Sigma) + B(x) + C(m, \Sigma)x + x^* D(m, \Sigma) x \right] d\lambda 
+$$
 
+Ultimately, we included algorithm \ref{alg:gaAdaptiveWeight} in this section for the suprisingly convincing performance. Yet, the algorithm was the product of an accident and lacks mathematical rigor. Hence, we hesitate to recommend its usage. We proceed with algorithm \ref{alg:gaAdaptive}  for the testing of Rényi's alpha divergence and the comparison with Kullback-Leibler since it yielded more promising results than algorithm \ref{alg:gaIS}.
+
+\subsubsection{Stochastic Gradient Descent based on the Renyi Divergence Criterion}
+
+Next, we consider the behavior of our algorithm based on Rényi's Alpha Divergence. Previous algorithmic considerations easily apply to Rényi's Alpha Divergence as we are merely required to replace the shape of the gradient with the derivations from {section ~\ref{RalphaDiv}} and employ a gradient descent instead of gradient ascent. Generally, parameter settings of the stochastic gradient descent remain unchanged, except for the safety coefficient. The same holds for the choice of sampling and target distribution.
+Yet, here we test the convergence behavior once for fixed and once for variable variance. The latter case coincides with our approach for the Kullback-Leibler criterion whereas the former we have not yet examined.
+For a given parametrization, we illustrate the behavior of the divergence for different values of $\alpha = {0,2,5,30}$. Besides, for easy comparison we also depict the behavior of the Kullback-Leibler criterion based on algorithm \ref{alg:gaAdaptive}.
+Figure ~\ref{sim:student} in appendix B demonstrates the following scenarios:
+\begin{itemize}
+    \item Scenario 1 - unknown (i.e. variable) variance - $f \sim 
+    \mathcal{N}(7, 5), q_0 \sim \mathcal{N}(15, 9)$
+    % \begin{itemize}
+    %     \item We remark that the safety coefficient permits the Kullback-Leibler to converge by restricting bad weights and favoring sound gradient steps. Shutting off the safety coefficient causes the relative error of the Kullback-Leibler criterion to explode (not depicted).
+    %     \item $\theta_0 = \mu$: The relative error curve of the Kullback-Leibler criterion converges the quickest. Tied in second place, the relative errors of Rényi's alpha divergence with $\alpha = {2,5}$ behave very similarly and reach convergence after roughly 900 iterations. Far behind, for $\alpha = 0$ the relative error diminishes the slowest, while in the case of $\alpha = 30$, the algorithm fails entirely. 
+    %     \item $\theta_1 = \sigma^2$: Up until iteration 150, the relative errors of Rényi's alpha divergence with $\alpha = {2, 5}$ run almost identically and even reach an relative error of 0. However, this state is only short lived as the relative error jumps back to 0.5 for $\alpha = 5$ and roughly 0.65 for $alpha = 2$, where they remain rather steady. For $alpha = 0$, the relative error increases from the initial value and seemingly comes to rest at a relative error of 1.3. The Kullback-Leibler divergence by far has the most trouble at updating $\sigma^2$. The relative error of the variance instantly climbs to 2.5 from where it recovers only slowly over the considered period. 
+    % \end{itemize}
+    
+    \item Scenario 2 - known (i.e. fixed) variance - $f \sim \mathcal{N}(1, 1), q_0 \sim \mathcal{N}(5, 1)$
+    % \begin{itemize}
+    %     \item Here, we shut off the safety coefficient. 
+    %     \item $\theta_0 = \mu$ For a high value of $\alpha$, such as $\alpha = 30$, the mean converges quickly and, in spite of the stochasticity of the optimization procedure, exhibits very little fluctuation. In fact, once converged to 0, deviations of relative error are barely detectable visually. Aside from that, $\alpha = 5$ runs almost identically to $\alpha = 30$ at the beginning, however, fluctuates more strongly past iteration 150. The trajectory of the Kullback-Leibler criterion is noisy and struggles more strongly to approach a relative error of 0. The relative error for $\alpha = 0$ performs the worst among the considered values of $alpha$.
+    % \end{itemize}
+\end{itemize}
+
+\vspace{0.42cm}
+
+We summarize the key insights:
+\begin{itemize}
+    \item In scenarios where we perform simultaneous updates, i.e. $\mu$ and $\sigma^2$ are unknown, $\mu$ is best approximated by the Kullback-Leibler criterion. However, the approximation of $\sigma^2$ via Kullback-Leibler appears inferior to the ones from Rényi's alpha divergence. Particularly, values of $\alpha = {2,5}$ are shown to provide a viable compromise with decent mean and variance convergence.
+    \item Assuming known variance, higher values of $\alpha$ seem to accelerate convergence and diminish noise. In our case, Rényi's alpha divergence with $\alpha = 30$ is unbeaten. Note however, that it only works in the case where we keep the variance fixed. In contrast, the relative error of Kullback-Leibler are more prone to fluctuations. Yet, it does appear to converge in mean, albeit more slowly than other considered options. 
+\end{itemize}
+
+
+However Rényi's divergence criterion might not be suitable for other distribution families as its convergence speed lacks behind Kullback-Leibler's and hence, might not be converging at a satisfying rate. An example of such case can be seen in Appendix \ref{sim:renyi-other-distrib}.

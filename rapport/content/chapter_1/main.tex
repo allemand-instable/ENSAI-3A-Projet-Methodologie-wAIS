@@ -1,15 +1,19 @@
-\section{Introduction}
+
 
 \begin{multicols}{2}
-Do we need an abstract?
+\section*{Abstract}
 
+Portier and Delyon's weighted adaptive importance sampling (wAIS) ~\cite{portierdelyonWAIS} serves to estimate integrals efficiently. It builds on the concept of adaptive importance sampling and tackles one of its major drawbacks. Namely, AIS bears the burden of potentially bad samples. By introducing weights which allow the algorithm to forget poor samples, \cite{portierdelyonWAIS} are able to demonstrate quicker convergence. What mainly differentiates wAIS from standard importance sampling is that the former approximates a suitable sampling policy by iteratively performing updates to it. In \cite{portierdelyonWAIS}, moment equations are used to update the sampling policy. In contrast, we focus on another method which utilizes divergence measures in conjunction with a stochastic gradient descent to converge toward the optimal distribution (for estimating an integral). As divergence measures we consider the Kullback-Leibler and Rényi's alpha divergence. We demonstrate the behavior of our updating algorithm and test it in wAIS. The results in the latter case suggest to use Rényi's alpha divergence when computing many estimates is infeasible and to use the Kullback-Leiber divergence when computing many estimates is possible. The latter may then yield a more accurate result.
+
+\section{Introduction}
 
 Weighted adaptive importance sampling, abbreviated wAIS, belongs to the class of Monte Carlo methods. The goal of these techniques is to evaluate an integral of the form: 
 
-$$\displaystyle \int g \, d\mu$$
+$$\displaystyle \int f \, d\mu = \int \varphi \cdot \pi \, d\mu$$
 
-with g being an integrable function with respect to $\mu$. 
-A well known problem which may occur, is that the data generating process preferably generates values in areas which are not pertinent to the integrand. The resulting estimate suffers from poor variance and may require many samples to yield decent results. Importance sampling resolves this issue by sampling in the important regions of the integrand and subsequently scaling the samples with importance weights. If done correctly, the importance sampling estimate features a lower variance than the standard Monte Carlo estimate. wAIS is a modification of importance sampling, but they share the same goal of variance reduction. 
+with $f$ being an integrable function with respect to $\mu$. 
+A well known problem which may occur, is that the data generating process preferably generates values in areas which are not pertinent to the integrand. The resulting estimate suffers from poor variance and may require many samples to yield decent results. Importance sampling resolves this issue by sampling in the important regions of the integrand and subsequently scaling the samples with importance weights. While importance sampling bears the risk of producing much worse results, if done correctly, the importance sampling estimate features a lower variance than the standard Monte Carlo estimate. 
+Our subject of interest, wAIS, is derived from the classic importance sampling and they share the same goal of variance reduction. 
 
 The rising interest in importance sampling is owed to its great utility in a wide range of applications such as machine learning or computer graphics. To illustrate, computer graphics heavily rely on efficient computation of integrals to lower the time cost of rendering a scene. 
 \newline
@@ -19,44 +23,62 @@ Importance sampling is characterized by the following equation:
 
 
 
-$$ I_f(g) = \displaystyle \int gf d\lambda = \int g \frac f q q d\lambda = \mathbb{E}_q [g w]
+$$ I_\pi(\varphi) = \displaystyle \int \varphi \cdot \pi d\lambda = \int \varphi \times \left(\frac \pi q\right) \times q \ d\lambda = \mathbb{E}_q [ w \varphi]
 $$
 where 
 \begin{itemize}
-    \item g: $\mathbb R^d \to \mathbb{R}$ such that $\int |g|f < +\infty$
-    \item $w = \frac f q$
-    \item $f$ is a density 
+    \item $\varphi$: $\mathbb R^d \to \mathbb{R}$ such that $\int |\varphi| \pi < +\infty$
+    \item $w = \frac \pi q$
+    \item $\pi$ is a density 
     \item $q$ is the density which is proposed for sampling
 \end{itemize}
 
-The resulting estimate is $\frac 1 n \displaystyle\sum\limits_{i=1}^n w(X_i) \times g(X_i)$
+The resulting estimate is $\frac 1 n \displaystyle\sum\limits_{i=1}^n w(X_i) \times \varphi(X_i)$
 which is given by the law of large numbers.
 
 \bigskip
 
-Given a suitable choice of the sampling policy $q$, the importance sampling estimate achieves a lower variance than the standard Monte Carlo estimate. For that to be the case, $q$ must be proportional to $|g|f$, i.e. $q \displaystyle \propto |g|f$. The dependency $|g|f$ proves trickyFinding such $q$ may prove difficult, which motivates (weighted) adaptive importance sampling.
+Given a suitable choice of the sampling policy $q$, the importance sampling estimate achieves a lower variance than the standard Monte Carlo estimate. For that to be the case, $q$ must be proportional to $|\varphi|\pi$, i.e. $q \displaystyle \propto |\varphi| \pi$  \cite{hammersleyhandscombMCM}, \cite{evans2000approximating}. 
+
+The dependency of the ideal sampling policy on $|\varphi|\pi$ implies that one cannot sample from them. Here, adaptive importance sampling comes into play. 
+
+Adaptive importance sampling (in short: AIS) is adaptive in the sense that it approximates appropriate sampling policies by iteratively updating a proposed sampling policy $q$. Clearly, $q$ must belong to a family of distributions, from which one can simulate. 
 
 \bigskip
 
-Portier and Deylon's weighted Adaptive Importance sampling is characterized by the following equation:
+We consider Portier and Deylon's wAIS which is characterized by the following equation:
 
 $$q_t \underset {\textsf{notation}} \equiv q_{\theta_t}$$
 
 $$\boxed{
-I_T(\varphi) = \frac 1 {N_T} \displaystyle\sum\limits_{t=1}^T \alpha_{T,t} \displaystyle\sum\limits_{i = 1}^{n_t} \frac {\varphi(x_{t,i})}{q_{t-1}(x_{t,i})}
+I_{\famfinie q 0 {T-1}}(\varphi) = \frac 1 {N_T} \displaystyle\sum\limits_{t=1}^T \alpha_{T,t} \displaystyle\sum\limits_{i = 1}^{n_t} \frac {\varphi(x_{t,i})}{q_{t-1}(x_{t,i})}
 }$$ ~\cite{portierdelyonWAIS}
 
-Instead of struggling to directly fix $q$ optimally, wAIS allows $q$ to approximate the desired sampling distribution in an iterative manner. Hence, the adaptive nature of the algorithm is expressed via the sampling policy $q_{t-1}$. Notice, the subscript which indicates its current state. Overall wAIS iterates $t = 1, 2, ...,T$ times. 
+ The adaptive nature of the algorithm is expressed via the sampling policy $q_{t-1}$. Notice, the subscript which indicates its current state. Overall wAIS iterates $t = 1, 2, ...,T$ times. 
 
-During iteration $t$, $n_t$ samples are generated according to $q_{t-1}$, which are subsequently fed to the algorithm and evaluated. Here, Delyon and Portier (2018) introduce weights, designated by $\alpha_t$. These weights allow the algorithm to forget earlier stages where the quality of drawn samples was poor. The iteration is concluded by an update of $q$ according to a prespecified updating scheme such that $q_{t-1} \gets q_t$. 
-
-\bigskip
-
-Delyon and Portier (2018) employ the generalized methods of moments to update $q$ to demonstrate the asymptotic efficiency of wAIS. Alternatives based around the exact methods of moments with the Student distribution, Kullback-Leibler Divergence or the sampling variance are presented, but not further elaborated on. The goal of this paper centers around examining the asymptotic behaviour of wAIS using the Kullback-Leiber approach and [insert criterion]. 
+During iteration $t$, $n_t$ samples are generated according to $q_{t-1}$, which are subsequently fed to the algorithm and evaluated. \cite{portierdelyonWAIS} introduces weights, designated by $\alpha_t$. These weights allow the algorithm to forget earlier stages where the quality of drawn samples was poor. The iteration is concluded by an update of $q$ according to a prespecified updating scheme such that $q_{t-1} \gets q_t$. 
 
 \bigskip
 
-[insert Structure of the paper] and major results.
+\cite{portierdelyonWAIS} employs the generalized methods of moments to update $q$ to demonstrate the asymptotic efficiency of wAIS. Alternative updating schemes based around the Kullback-Leibler Divergence or the sampling variance are not explored. The goal of this paper centers around examining the asymptotic behaviour of wAIS using the Kullback-Leiber approach and Rényi's alpha divergence in conjunction with a stochastic gradient descent as update regiment. Hence, our final results base themselves on two updating algorithms, one for each divergence measure.  Thereby, we extend Portier and Delyon's results on wAIS by examining a computationally cheap, albeit noisy way, to perform updates on the sampling policy. 
+
+The appeal of divergence measures in updating the sampling policy lies in the fact that we don't need to know the moment equations of our distribution to be able to update it. It suffices to plug in the densities of our desired distribution and the sampling distribution. The algorithm is able to determine the best approximation of the optimal policy for our sampling distribution irrespective of the latter's parametric family. Properties of the approximation of course depend on the choice of divergence measure. In other terms, it allows to approximate complicated distributions with other ones with fairly low effort.
+
+\bigskip
+
+The methodological section (\ref{section2}) solves two core issues. The first one, is dedicated to deriving the gradient of two divergence measure, namely, the Kullback-Leibler criterion and Rényi's alpha divergence. To arrive at a suitable form of the gradient we apply importance sampling and adaptive importance sampling to the measures. 
+The other issue concerns the design of the optimization algorithm. For this purpose, we recall the fundamental concept of gradient ascent (descent) to subsequently arrive at the well-known stochastic gradient ascent (descent). In the design process, we devise one algorithm based on standard importance sampling and two others based on adaptive importance sampling. Among the adaptive ones, one algorithm has emerged accidentally. Surprisingly, it yields impressive results in the simulations, which is why we decided to include it. 
+
+\bigskip
+
+Section \ref{section3} discusses some core design principles which guided the code implementation. We also provide some suggestions for further improvements of the code. 
+The remainder of section 3 revolves around simulation studies. Tests of the updating algorithms reveal that the convergence behavior of the adaptive algorithms is superior to the one based on the classic importance sampling. Further, we find that when using the collection of normal distributions as sample and target policy, for various values of $\alpha$, Rényi's alpha divergence displays more stable behavior and better estimates of the variance than the Kullback-Leibler criterion. Kullback-Leibler, however, provides strong estimates of the mean. For other considered distribution families, Kullback-Leibler outperforms Rényi's alpha divergence. Ultimately, each measure has its merits and their behavior strongly depends on the concrete situation. The simulations of wAIS in conjunction with our updating schemes demonstrate that Rényi's alpha divergence yields decent estimates reliably.  Meanwhile, Kullback-Leibler is able to produce very accurate estimates, but it does so rather unreliably. We are also able to confirm \cite{portierdelyonWAIS}'s results that quick updates to the sampling policy as opposed to restrictions on the allocation policy improve the performance of wAIS. 
+
+\largeskip
+
+\largeskip
+
+\pagebreak
 
 \end{multicols}
 

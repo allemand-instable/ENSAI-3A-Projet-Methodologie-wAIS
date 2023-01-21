@@ -1,0 +1,86 @@
+\subsection{Testing Weighted Adaptive Importance Sampling}
+
+Previously we tested the convergence behavior of our updating schemes. Now, we examine how the wAIS fares when using the aforementioned schemes to perform updates to the sampling policy. To maintain some consistency with the original work of Portier and Delyon, \cite{portierdelyonWAIS}, we test our algorithms on the same problem, that is the computation of $$\mu_* = \displaystyle \int x \phi_{\mu_*, \sigma_*^2}(x)dx$$, with $\phi_{\mu_*, \sigma_*^2}$ being the probability density of  $\mathcal{N}(\mu, \sigma^2$), $\mu_* = -7$ and $\sigma^2 = 1$. As the problem already implies, we only consider the computation of $\mu$, fixing $\sigma^2$ in the process. The sampling policy also stems from the family of normal distributions with initial value $\mu_0 = -3$. We consider the same combination of allocation policies $n_t$ and number of iterations $T$ as \cite{portierdelyonWAIS}. However, we already know that the performance greatly benefits from many and quick updates, i.e. large $T$, while the choice of allocation policy is of lesser importance \cite{portierdelyonWAIS}.  Besides, in accordance with \cite{portierdelyonWAIS}, we only conduct simulations on normalized wAIS, as the unnormalized version does not produce competitive results. 
+
+Updates via the stochastic gradient descent do add some flexibility in the update design. Besides the considerable collection of parameters contained in stochastic gradient descent, we may tweak the number of gradient steps at each update as well as the frequency of updates, i.e. whether we perform updates at each $T$ or only at every few iterations. As for the stochastic gradient descent we adopt the same settings as previously. 
+For Rényi's alpha divergence, we ran the simulations with a value of $\alpha = 15$.
+
+% \begin{itemize}
+%     \item Scenario 1 a - f
+%         \begin{itemize}
+%         \item Allocation policy, i.e. number of drawn samples at each iteration $n_t$: 2$e$4
+%         \item Number of iterations $T$: 5
+%         \item Frequency of updates: a\) 1, b\) 2
+%         \item Number of gradient steps at each update: a\)5, b\)10
+%         \end{itemize}
+%     \item Scenario 2 a - f
+%         \begin{itemize}
+%         \item Allocation policy, i.e. number of drawn samples at each iteration $n_t$: 4$e$3
+%         \item Number of iterations $T$: 20
+%         \item Frequency of updates: a\)4, b\)6
+%         \item Number of gradient steps at each update: 
+%         \end{itemize}
+%     \item Scenario 3 a - f
+%         \begin{itemize}
+%         \item Allocation policy, i.e. number of drawn samples at each iteration $n_t$: 2$e$3
+%         \item Number of iterations $T$: 50
+%         \item Frequency of updates: a\)4, b\)6
+%         \item Number of gradient steps at each update
+%         \end{itemize}
+% \end{itemize}
+
+
+The table below summarizes essential parameter values which have been used for testing and the corresponding mean squared error (MSE) which is computed using the results from the simulation. 
+The values in column "method" are to be read in the following way:
+Method - $T$-$n_t$ - frequency of updates - gradient steps per update
+
+We shortly explain the different values:
+\begin{itemize}
+    \item Method
+    \begin{itemize}
+        \item KL: Kullback-Leibler criterion
+        \item R: Rényi's alpha divergence with $\alpha = 15$
+    \end{itemize}
+    \item Allocation policy, i.e. number of drawn samples at each iteration: $n_t = \{2000, 5000, 20000\}$
+    \item Number of iterations $T = {5,20,50}$
+    \item Frequency of updates:  at every/every second/every fourth iteration
+    \item Number of gradient steps at each update: $\{5, 10\}$, $\{3,6\}$
+\end{itemize}
+
+For each configuration, we performed 30 estimations of $\mu_*$. 
+The resulting estimates are used to compute the MSE which is displayed in the right column of the table. Corresponding visual illustrations are provided in figure 7 of appendix ~\ref{sim:wais-KL-and-R}.
+
+
+\bigskip
+\begin{tabular}{lll}
+\toprule
+{Config} &           \textbf{Method} &      \textbf{MSE} \\
+\midrule
+0  &   KL-5-20 000-1-5 &  4.242587 \\
+1  &  KL-5-20 000-2-10 &  7.516624 \\
+2  &   KL-20-5 000-4-6 &  4.707335 \\
+3  &   KL-20-5 000-2-3 &  4.069143 \\
+4  &   KL-50-2 000-4-6 &  3.204496 \\
+5  &   KL-50-2 000-2-3 &  1.623874 \\
+6  &    R-5-20 000-1-5 &  3.715118 \\
+7  &   R-5-20 000-2-10 &  3.297377 \\
+8  &    R-20-5 000-4-6 &  2.383815 \\
+9  &    R-20-5 000-2-3 &  2.624274 \\
+10 &    R-50-2 000-4-6 &  2.405894 \\
+11 &    R-50-2 000-2-3 &  1.990425 \\
+\bottomrule
+\end{tabular}
+
+The key insights are:
+\begin{itemize}
+    \item Irrespective of the used method, the MSE decreases in the number of iterations, which coincides with results from \cite{portierdelyonWAIS}.
+    \item Kullback-Leibler (Config 5) provides the best result, yet globally, it produces those less reliably, i.e. suffers from relatively stronger variance.
+    \item Rényi's alpha divergence delivers more consistent results, with MSEs mostly ranging from roughly 3.7 to 2 compared to MSEs for Kullback-Leibler ranging from 7.5 to 1.6.
+    \item Even though using Kullback-Leibler can produce precise results it does suffer from a lack of reliability. Meanwhile Rényi's alpha divergence produces decent but perhaps less precise results more consistently. In situations where only few estimates can be generated, Rényi's estimate may be a safer option than Kullback-Leibler's. If many estimates can be estimated, the chance of having very good estimates with Kullback-Leibler increases, raising its attractivity. 
+\end{itemize}
+
+\largeskip
+
+\largeskip
+
+\pagebreak

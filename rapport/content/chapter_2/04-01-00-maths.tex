@@ -1,19 +1,20 @@
-We derived the form of the integral of the respective criterion. This next section will discuss the stochastic gradient descent algorthm. We recall the classic gradient descent. Here, it is presented as gradient ascent as we are looking for the maximum of our function of interest. 
+In this section, we design our optimization algorithm. The goal is to have a stochastic gradient descent. Hence, we shall start by recalling the classic gradient descent. Here, we are actually interested in a gradient ascent as we are looking for the maximum of the Kullback-Leibler criterion. 
 
 \bigskip
 
 The goal is to find the maximum of $L$.
 
-$$dL(\theta_{max}) = 0$$
+in other terms: $dL(\theta_{max}) = 0$
 
-$$d_xL(h) = \left< \ \nabla L(x) \ | \ h \ \right>$$
+The gradient is a vector of the same dimension as $\theta$ which satisfies the following equation: $$d_xL(h) = \left< \ \nabla L(x) \ | \ h \ \right>$$
 
-$$L(x) \approx L(x_0) + d_{x_0}L(x - x_0)$$
+$$L(x) \underset{h \rightarrow 0}{=} L(x_0) + d_{x_0}L(x - x_0) + o( \Vert h \Vert )$$
 
+The main idea is that:
 
 $$
 \begin{array}{rcl}
-\argmax\limits_x L(x) &\approx& \argmax\limits_{x} \left[ \ L(x_0) + d_{x_0}L(h_x) \ \right]
+\argmax\limits_x L(x) &\underset{h \rightarrow 0}{\approx}& \argmax\limits_{x} \left[ \ L(x_0) + d_{x_0}L(h_x) \ \right]
 \\
 & = &
 \argmax\limits_{h_x} \left[ d_{x_0}L(h_x) \ \right]
@@ -24,23 +25,24 @@ $$
 $$
 
 
-What is the direction $h_x$ which maximises $L$?
+We are interested to know the direction $h_x$ which maximises $L$. It holds that
 
 $$\underset{||h_x|| = 1}{\operatorname{max}} \left< \ \frac{\nabla L(x)}{|| \nabla L(x) ||} \ | \ h_x \ \right> = 1$$
 
-and so:
+ and thus, by using Cauchy-Schwarz inequality, we see that:
 
-$$\underset{||h_x|| = 1}{\operatorname{argmin}} \left< \ {\nabla L(x)} \ | \ h_x \ \right> = {+} \frac{\nabla L(x)}{|| \nabla L(x) ||}$$
+$$\argmax_{||h_x|| = 1} \left< \ {\nabla L(x)} \ | \ h_x \ \right> = {+} \frac{\nabla L(x)}{|| \nabla L(x) ||}$$
 
-the direction of greatest ascent is given by
+Hence, the direction of greatest ascent is given by
 
 $$h = + \frac{\nabla L(x)}{|| \nabla L(x) ||}$$.
 
 \bigskip
 
-Therefore, we can iterate from a starting paramater $\theta_0$ and gradually approach to the maximum value of $L$ located at $\theta_{max}$ :
+Gradient ascent is an iterative optimization procedure.
+Therefore, we iterate from an initialization value of our parameter $\theta_0$ and gradually approach $\theta_{max}$, a point where $L$ has a local maximum.
 
 \bigskip
 
-$$\boxed{\theta_{t+1} \leftarrow \theta_t + \gamma \underbracket{ \widehat{\nabla_\theta L}(\theta_t)}_{\frac 1 N \displaystyle\sum_{i = 1}^N \nabla_\theta \left[\omega_{\theta_t}(X_i) \times h_{\theta_t}(X_i)\right]}}$$
+$$\boxed{\theta_{t+1} \leftarrow \theta_t + \gamma \underbracket{ \widehat{\nabla_\theta L}(\theta_t)}_{\frac 1 N \displaystyle\sum_{i = 1}^N \omega(X_i) \times \nabla_\theta \left[ h_{\theta_t}(X_i)\right]}}$$
 

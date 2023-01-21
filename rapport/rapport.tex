@@ -1,16 +1,16 @@
-\documentclass[10pt]{article}
+\documentclass[9pt]{article}
 % packages and definitions
 \input{include/include.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\auteur}{Markus Goeswein\\Hugo Brunet}
 \newcommand{\articletitle}{On the efficient computing of sampling policy updates for weighted adaptive importance sampling}
-\newcommand{\customdate}{13 décembre 2022}
+\newcommand{\customdate}{January 2nd 2023}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 %\dominitoc
 \begin{document}
+\raggedcolumns
 %%%%%%%%%%%%%%%%%%%%%%%%%% INCLUDE COMMAND %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%% AND DEFAULTS PARAMETERS %%%%%%%%%%%%%%%%%%%%%%%%%
 \input{include/commands.tex}
@@ -28,10 +28,13 @@
 \input{content/chapter_1/main.tex}
 \input{content/chapter_2/main.tex}
 \input{content/chapter_3/main.tex}
+\input{./content/chapter_3/testing_conclusion.tex}
+
 %%%%%%%%%%%%%%%%%%%%%%%%% FIN CHAPITRES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{content/appendix/main.tex}
 
 \pagebreak
+\input{content/glossary_new.tex}
 
 \typeout{}
 \bibliography{bibliography/bibliography}

@@ -1,7 +1,7 @@
 \subsection{Normalized Importance Sampling}
 
 
-As previously hinted, often, the target distribution $f$ from which we wish to sample is only known up to a proportional constant. In that scenario, "naive" importance sampling will yield a biased estimate. Normalized importance sampling provides a solution to that issue as demonstrated by the following: 
+Often, the target distribution $f$ from which we wish to sample is only known up to a proportional constant. In that scenario, "naive" importance sampling will yield a biased estimate. Normalized importance sampling provides a solution to that issue as demonstrated by the following: 
 
 $$\mathbb E_f \left[ h_\theta(X) \right]$$
 
@@ -44,8 +44,8 @@ $$
 
 The latter is due to $f$ being a density of which the integral equates to 1. Hence, the normalized importance sampling estimator takes the shape: 
 
-$$\nabla L(\theta) \approx \frac{ \frac 1 N \displaystyle\sum_{i=1}^N W_\theta(X_i) h_\theta(X_i)}
-{\frac 1 N \displaystyle\sum_{i=1}^N W_\theta(X_i)}$$
+$$\nabla L(\theta) \approx \frac{ \frac 1 N \displaystyle\sum\limits_{t=1}^{n_t}\sum_{i=1}^N \omega_{\theta_t}(X_i) h_{\theta_t}(X_i)}
+{\frac 1 N \displaystyle\sum\limits_{t=1}^{n_t}\sum_{i=1}^{n_t} \omega_{\theta_t}(X_i)}$$
 
 
 with:
@@ -56,4 +56,6 @@ with:
 \item $W_\theta : x \mapsto \varphi(x) / q_\theta(x)$
 \end{itemize}
 
+An appropriate sampling policy in the case of normalized importance sampling is given by :
 
+$q \propto |\varphi - \displaystyle \int \varphi \pi|\pi$. Again, the issue arises that suitable sampling policies can generally not be sampled from, but must be approximated. In this case, one may resort to normalized AIS. \cite{douc2007minimum} The concept of normalized importance sampling will prove important in the simulation section as \cite{portierdelyonWAIS} recommends the usage of normalized wAIS.

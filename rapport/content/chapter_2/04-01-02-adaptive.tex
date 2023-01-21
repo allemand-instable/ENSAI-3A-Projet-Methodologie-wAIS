@@ -1,6 +1,6 @@
-It makes sense to use the distribution which is the closet to the one we are interested in at each step. That's why we can also use and "adaptive" algorithm where at each step we sample new observation from the latest distribution $q_t$. By using this method, one might be careful about the expression of the gradient of the likelihood function. Indeed, as $\omega$ will be a function of $\theta$ we either need to apply the product rule or compute numerically the gradient of $(\frac {f}{q_t} \times \log q_t)$.
+Intuitively, it makes sense to use the distribution which is the closest to the target distribution at each step. In a slightly modified "adaptive" algorithm, which in fact borrows from the concept of adaptive importance sampling, at each step we sample new observations from the latest distribution $q_t$ and update the gradient formula according to $\theta_t$. 
 
-This leads to the following algorithm :
+% ?One needs to be careful about the expression of the gradient of the likelihood function. Since $\omega$ is a function of $\theta$, we either need to apply the product rule or numerically compute the gradient of $(\frac {f}{q_t} \times \log q_t)$.?
 
 
 \begin{algorithm}[H]
@@ -10,8 +10,8 @@ This leads to the following algorithm :
         \\ \ra Initiate $\theta_0 \in \mathbb R^p$ 
         \\ \ra Initiate $\eta_0$ (or $\eta$ for a fixed step size) 
         \\ \ra Initiate the sampling distribution $q_0$
-        \\ \ra choose a small value of $\varepsilon$ ( i.e $\varepsilon \rightarrow 0 $)
-        \\ \ra choose a number of maximum iterations : max.iter
+        \\ \ra Choose a small value of $\varepsilon$ ( i.e $\varepsilon \rightarrow 0 $)
+        \\ \ra Choose a number of maximum iterations : max.iter
         \For{$t \in \llbracket 1, \max.iter \rrbracket$}
         \If {$\Vert \nabla f \Vert < \varepsilon$}
         \State Break the loop
@@ -25,25 +25,51 @@ This leads to the following algorithm :
             
             \State \ra compute 
             
-            $$\widehat{\nabla_\theta L}(\theta_t) = \displaystyle\sum\limits_{i=1}^{N} \nabla_\theta \left[\omega_\theta(X_i) h_\theta(X_i)\right]$$ 
+            $$\widehat{\nabla_\theta L}(\theta_t) = \frac 1 N \displaystyle \sum\limits_{t = 1}^{T} \sum_{i = 1}^{n_t} \omega_{\theta_t}(X_i) \times h_{\theta_t}(X_i)$$ 
             
 
             $$\begin{array}{l}
-                {N = \sum N_t}
+                {N = \sum n_t}
                 \\
-                {\omega_\theta : x \mapsto \frac{f(x)}{q_t(x)}}
+                {\omega_\theta : x \mapsto \frac{f(x)}{q_\theta(x)}}
                 \\
-                {h_\theta : x \mapsto \log q_t(x)}
+                {h_\theta : x \mapsto \nabla_\theta \log q_\theta(x)}
             \end{array}$$
             
             \bigskip
 
             \State \ra $\underbracket[1pt][5pt]{\theta_{[t]} \gets}_{\theta_{t+1} = } \theta_{[t]} + \eta \nabla L(\theta_t)$
-            \State \ra update $\eta$ such that $f(x_{t+1}) > f(x_t)$ 
-            \State \ra Update $q_t$ with the recently computed parameter
+            \State \ra Update $\eta$ such that $f(x_{t+1}) > f(x_t)$ 
+            \State \ra Update $q_t$ with the most recent value of $\theta_t$
         \EndFor  
     
     \Return $\theta_{max.iter}$
     \end{algorithmic}
     \end{algorithm}
+
+\subsubsection{A Curious Finding}
+The following algorithm has resulted from a coding mistake. We discuss some of the mathematical implications in section 3.2.1, where likewise the convergence behavior of said algorithm is assessed. As previously hinted, algorithm 3 yields surprisingly good results. We refer to the corresponding section for details. 
+\begin{algorithm}[H]
+    \caption{Gradient Ascent - Adaptive with $\omega$ inside the Gradient}\label{alg:gaAdaptiveWeight}
+    \begin{algorithmic}
+
+        \State
+        identical to algorithm 2 except:
+        
+
+            $$\widehat{\nabla_\theta L}(\theta_t) = \displaystyle\sum\limits_{t=1}^{T}\sum\limits_{i=1}^{n_t} \nabla_{\theta_t} \left[\omega_{\theta_t}(X_i) h_{\theta_t}(X_i)\right]$$ 
+
+            $$\begin{array}{l}
+                {N = \sum n_t}
+                \\
+                {\omega_\theta : x \mapsto \frac{f(x)}{q_\theta(x)}}
+                \\
+                {h_\theta : x \mapsto \nabla_\theta \log q_\theta(x)}
+            \end{array}$$
+            
+            \bigskip
+
+    \end{algorithmic}
+    \end{algorithm}
+
 

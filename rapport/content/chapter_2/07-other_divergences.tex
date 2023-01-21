@@ -1,7 +1,8 @@
-\subsection{Other divergence measures}
+\subsection{Other Divergence Measures}
 
-\subsubsection{Rényi's Alpha Divergence}
+\subsubsection{Rényi's Alpha Divergence}\label{RalphaDiv}
 
+As second divergence criterion, we consider Rényi's Alpha divergence. It is characterized by the following equation:
 $$
 \begin{array}{rcl}
 	R_\alpha(p \Vert q) &=& \frac 1 {\alpha - 1} \log \esperanceloi q { \left( \frac {p(X)} {q(X)} \right)^\alpha }
@@ -14,73 +15,132 @@ R_\alpha(q_\theta \Vert f) &=&
 \end{array}
 $$
 
-therefore we can derive the following expression of the gradient of the Rényi's alpha divergence, using the differentiation under the integral theorem :
+We can derive the following expression of the gradient of the Rényi's alpha divergence by applying the differentiation under the integral theorem:
 
 
-$$\nabla_\theta R_\alpha(q_\theta \Vert f) = \frac {1}{\alpha - 1} \log \esperanceloi{ q_0 }{ \left( \frac{f(X)}{q_0(X)} \right) \nabla_\theta \left( \frac {q_\theta(X)} {f(X)} \right)^\alpha }$$
+$$\nabla_\theta R_\alpha(q_\theta \Vert f) = \frac {\nabla_\theta}{\alpha - 1} \log \esperanceloi{ q_0 }{ \left( \frac{f(X)}{q_0(X)} \right)  \left( \frac {q_\theta(X)} {f(X)} \right)^\alpha }$$
 
-we can deduce from there, using the law of large numbers an estimator of $\nabla_\theta R_\alpha(q_\theta \Vert f)$, which will be noted as $\widehat{\nabla R_\alpha}$:
+we have:
+
+$$\begin{array}{ccccccccc}
+    \mathds R^p& \longrightarrow       &  \mathds R   & \longrightarrow       & \mathds R & \longrightarrow       & \mathds R & \longrightarrow       & \mathds R \\
+    \theta & \longmapsto   &  \frac{q_\theta}{f}  & \longmapsto   & \left(\frac{q_\theta}{f}\right) ^\alpha & \longmapsto   & \underbracket{\esperanceloi f { \left(\frac{q_\theta}{f}\right) ^\alpha}}_{I(\theta)} & \longmapsto   &  \log I(\theta)
+\end{array}$$
+
+using the chain rule we can determine the gradient of Rényi's $\alpha$-divergence:
+
+$$\begin{array}{rcl}
+\nabla_\theta R_\alpha(q_\theta \Vert f) 
+&=& 
+\displaystyle \frac 
+{ \nabla_\theta \esperanceloi f { \left(\frac{q_\theta}{f}\right) ^\alpha} }
+{ \esperanceloi f { \left(\frac{q_\theta}{f}\right) ^\alpha} }\\
+&\underset{\partial \textsf{ under } \int}{=}& 
+\displaystyle \frac {\esperanceloi f { \nabla_\theta \left(\frac{q_\theta}{f}\right) ^\alpha}}
+{\esperanceloi f { \left(\frac{q_\theta}{f}\right) ^\alpha}}\\
+&\underset{  \frac{dx}{dy} = \frac{dx}{dz}\frac{dz}{dy}   }{=}& 
+\displaystyle \frac {\esperanceloi f { \alpha \left(\frac{q_\theta}{f}\right) ^{\alpha-1} \nabla_\theta\left[ \frac {q_\theta} f \right] }}
+{\esperanceloi f { \left(\frac{q_\theta}{f}\right) ^\alpha}}\\
+\nabla_\theta R_\alpha(q_\theta \Vert f) &\underset{\textsf{AIS}}{=}&
+\boxed{ \displaystyle \frac {\esperanceloi {q_\theta} { \alpha \left(\frac{f}{q_\theta}\right) ^{1-\alpha} \frac {\nabla_\theta q_\theta} {q_\theta} }}
+{\esperanceloi {q_\theta} { \left(\frac f {q_\theta}\right) ^{1-\alpha}}} }
+\end{array}
+$$
+
+\info{By using simple IS sampling from $q_0$ we get:
+
+$$\nabla_\theta R_\alpha(q_\theta \Vert f) \underset{\textsf{IS} q_0}{=} \boxed{ \displaystyle \frac {\esperanceloi {q_0} { \alpha \left(\frac{f}{q_\theta}\right) ^{1-\alpha} \frac{\nabla_\theta q_\theta}{q_0} }}{{ \esperanceloi {q_0} { \left( \frac{f}{q_0}\right)\left(\frac{q_\theta}{f}\right) ^{\alpha}}} }}$$
+}
+
+From there, using the law of large numbers and the continuity of $(x,y) \mapsto \frac x y$ on $\mathds R \times \mathds R_+^*$ (because we are dealing with probability densities), we deduce an estimator of $\nabla_\theta R_\alpha(q_\theta \Vert f)$. This shall be denoted as $\widehat{\nabla R_\alpha}$:
+
+Considering $\famfinie x 1 n$ samples drawn from $q_\theta$
+
+$$J_N^{[\alpha]}(\textsf{numerator}) = \frac \alpha N \sum\limits_{i=1}^N \left(\frac{q_\theta(x_i)}{f(x_i)}\right)^{\alpha - 2} \cdot \widehat{\nabla_\theta} \frac{q_\theta}{f}(x_i)$$
+
+$$J_N^{[\alpha]}(\textsf{numerator}) \tend N \infty \esperanceloi {q_\theta} { \alpha \left(\frac{q_\theta}{f}\right) ^{\alpha-2} \nabla_\theta\left[ \frac {q_\theta} f \right] }$$
+
+$$J_N^{[\alpha]}(\textsf{denominator}) = \frac 1 N \sum\limits_{i=1}^N \left(\frac{q_\theta(x_i)}{f(x_i)}\right)^{\alpha - 1}$$
+
+$$J_N^{[\alpha]}(\textsf{denominator}) \tend N \infty \esperanceloi {q_\theta} { \left(\frac{q_\theta}{f}\right) ^{\alpha-1}}$$
 
 \[
 	\begin{array}{rcl}
 		
-	\widehat{\nabla R_\alpha} &=& \displaystyle{\frac 1 N \sum\limits_{i=1}^N  \left( \frac{f(x_i)^{1-\alpha}}{q_0(x_i)} \right) \widehat{\nabla_\theta }\left[\left( {q_\theta(x_i)} \right)^\alpha\right]}
+	\widehat{\nabla R_\alpha}(\theta)
+ &=& 
+ \displaystyle{ 
+ \alpha  
+ \sum\limits_{i=1}^{n}  
+ \frac{\left( \frac{f(x_i)}{q_\theta(x_i)} \right)^{2-\alpha}}
+ {\sum\limits_k 
+ \left(\frac{f(x_i)}{q_\theta(x_i)}\right)^{1-\alpha}} 
+ \cdot \widehat{\nabla_\theta} \frac{q_\theta}{f}(x_i)
+ }
 		\\
-	&=& \displaystyle{\frac 1 N \sum\limits_{i=1}^N \omega_i \cdot h_i(\theta)}
+&=& \displaystyle{ \alpha  \sum\limits_{i=1}^{n}  \frac{\frac{1}{q_\theta(x_i)}\left( \frac{f(x_i)}{q_\theta(x_i)} \right)^{1-\alpha}}{\sum\limits_k \left(\frac{f(x_i)}{q_\theta(x_i)}\right)^{1-\alpha}} \cdot \widehat{\nabla_\theta} {q_\theta}(x_i)}
+  \\
+  &=&\displaystyle{ \alpha  \sum\limits_{i=1}^{n}  \frac{\left( \frac{f(x_i)}{q_\theta(x_i)} \right)^{1-\alpha}}{\sum\limits_k \left(\frac{f(x_i)}{q_\theta(x_i)}\right)^{1-\alpha}} \cdot \frac{\widehat{\nabla_\theta} {q_\theta}(x_i)}{q_\theta(x_i)}}
+  \\
+	&=& \displaystyle{ \alpha \sum\limits_{i=1}^{n} \omega_i \cdot h_i(\theta)}
 \end{array}
 \]
 
-	with :
+	with:
 	\begin{itemize}
 	
-		\item $\displaystyle{\omega_i \isdef \frac{f(x_i)^{1-\alpha}}{q_0(x_i)}}$
-		\item $\displaystyle{h_i(\theta) \isdef \widehat{\nabla_\theta }\left[\left( {q_\theta(x_i)} \right)^\alpha\right]}$
+		\item $\displaystyle{\omega_i(\theta) \isdef \frac{\left( \frac{f(x_i)}{q_\theta(x_i)} \right)^{1-\alpha}}{\sum\limits_k \left(\frac{f(x_i)}{q_\theta(x_i)}\right)^{1-\alpha}}}$
+		\item $\displaystyle{h_i(\theta) \isdef \frac{\widehat{\nabla_\theta} {q_\theta}(x_i)}{q_\theta(x_i)}} = \widehat{\nabla_\theta} \log q_\theta(x_i)$
 	\end{itemize}
+
+
+using adaptive importance sampling we derive the followwing estimator :
+
+
+$$\boxed{\widehat{\nabla R_\alpha}_{\textsf{AIS}} = \alpha \cdot \sum\limits_{t=1}^T \sum\limits_{i = 1}^{n_t} \omega_i(\theta_t) \cdot h_i(\theta_t)}$$
+
+\warn{
+This time, we are considering a divergence (not the likelihood function). Therefore, we need to perform a gradient \bold{descent} and not ascent: 
+
+$$\theta_{t+1} = \theta_t - \eta \widehat{\nabla R_\alpha}$$
+}
 
 
 \subsubsection{Amari's Alpha Divergence}
 
+One could also consider the Amari's Alpha Divergence using the estimator derived from the following equations:
+
 $$
 	\begin{array}{lcl}
-		A_\alpha( p \Vert q ) & = & \frac{1}{\alpha( \alpha - 1 )} \left[ \int p^\alpha q^{1 - \alpha} d\lambda \ -1 \right]
+		A_\alpha( p \Vert q ) & \isdef & \frac{1}{\alpha( \alpha - 1 )} \left[ \int p^\alpha q^{1 - \alpha} d\lambda \ -1 \right]
 		\\
 		                      & = & \frac{1}{\alpha( \alpha - 1 )} \left( \esperanceloi q { \left( \frac {p(X)} {q(X)} \right)^\alpha } - 1\right)
 	\end{array}
 $$
 
-we can use ideas from importance smapling to derive the following expression :
+therefore we can easily derive the gradient:
 
-
-\[
+$$
 	\begin{array}{lcl}
-
-		A_\alpha( p \Vert q ) & = & \frac{1}{\alpha( \alpha - 1 )} \left( \esperanceloi q { \left( \frac {p(X)} {q(X)} \right)^\alpha } - 1\right)
-
-		\\
-		                      & = & \frac{1}{\alpha( \alpha - 1 )} \left( \esperanceloi {q_0} { \left( \frac {p(X)} {q(X)} \right)^\alpha  \left( \frac{q(X)}{q_0(X)} \right) } - 1\right)
-		\\
+		\nabla_\theta A_\alpha( q_\theta \Vert f ) & = & \frac{\nabla_\theta}{\alpha( \alpha - 1 )}\esperanceloi f { \left( \frac {q_\theta(X)} {f(X)} \right)^\alpha }
 	\end{array}
-\]
+$$
+
+\columnbreak
+
+Again, we combine previous considerations with the concept of importance sampling to derive the following expression:
+
+$$\boxed{\nabla_\theta A_\alpha( q_\theta \Vert f ) = \frac 1 {\alpha - 1} \esperanceloi{q_\theta}{ \left( \frac{q_\theta}{f} \right)^{\alpha - 1} \times \left( \frac{\nabla_\theta q_\theta}{q_\theta} \right) }}$$
 
 
-And therefore, we have :
-
-$$A_\alpha( p \Vert q_\theta ) = \frac {\esperanceloi {q_0} { \omega(X \vert \theta) \cdot r_\alpha(p \Vert q_\theta )(X) } - 1 }{\alpha ( \alpha - 1 )}$$
-
-
-with :
-\begin{itemize}
-    \item $r_\alpha( p \Vert q_\theta ) = \left( \frac {p(X)} {q(X)} \right)^\alpha$
-    \item $\omega( X \vert \theta ) = \frac{q_\theta(X)}{q_0(X)}$
-\end{itemize}
-
-The gradient of the divergence can therefore be expressed as (assuming the conditions to invert derivative and integral are met):
+From this expression we can derive an estimator of the gradient :
 
 $$
-\nabla_\theta A_\alpha( p \Vert q_\theta ) = 
-\frac {
-\esperanceloi {q_0} { \nabla_\theta 
-\left[\omega(X \vert \theta) \cdot d_\alpha(p \Vert q_\theta )(X)\right] } 
-}
-{\alpha ( \alpha - 1 )}
+\widehat{\nabla_\theta A_\alpha}( q_\theta \Vert f ) = 
+\displaystyle\frac 1 {N(\alpha - 1)}
+\sum\limits_{t=1}^T
+\sum\limits_{i = 1}^{n_t}
+\left( \frac{q_t(x_i)}{f(x_i)} \right)^{\alpha - 1}
+\frac{\widehat{\nabla_\theta} q_t (x_i) }{ q_t(x_i) }
 $$
+
