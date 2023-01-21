@@ -88,12 +88,7 @@ def weighted_adaptive_importance_sampling(
                                         ) -> float:
     numerator =I( φ= φ , π = π, q_init = q_init, nₜ_policy = nₜ_policy, T = T, update_params =update_params )
     denominator = I( φ = lambda x : 1 , π = π, q_init = q_init, nₜ_policy = nₜ_policy, T = T, update_params = update_params)
-    
-    # print("\n\nnum et denum")
-    # print(numerator)
-    # print(denominator)
-    # print("\n\n")
-    
+
     return  numerator/ denominator
 
 
