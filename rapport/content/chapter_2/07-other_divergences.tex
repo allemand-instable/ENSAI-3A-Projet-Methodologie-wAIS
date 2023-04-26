@@ -94,13 +94,13 @@ $$J_N^{[\alpha]}(\textsf{denominator}) \tend N \infty \esperanceloi {q_\theta} {
 	\end{itemize}
 
 
-using adaptive importance sampling we derive the followwing estimator :
+using adaptive importance sampling we derive the following estimator :
 
 
 $$\boxed{\widehat{\nabla R_\alpha}_{\textsf{AIS}} = \alpha \cdot \sum\limits_{t=1}^T \sum\limits_{i = 1}^{n_t} \omega_i(\theta_t) \cdot h_i(\theta_t)}$$
 
 \warn{
-This time, we are considering a divergence (not the likelihood function). Therefore, we need to perform a gradient \bold{descent} and not ascent: 
+This time, we are considering a divergence (not the likelihood function). Therefore, we need to perform a gradient \textbf{descent} and not ascent: 
 
 $$\theta_{t+1} = \theta_t - \eta \widehat{\nabla R_\alpha}$$
 }

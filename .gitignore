@@ -20,3 +20,13 @@ methodo_wAIS_python/log/debug.log.1
 rapport.zip
 rapport/rapport.zip
 .vscode/settings.json
+*.mtc*
+*.out
+*.maf
+*.blg
+*.bbl
+*.aux*
+*.synctex.gz
+*compile.bat
+*.DS_Store
+
