@@ -16,3 +16,4 @@ methodo_wAIS_python/log_weird/* linguist-documentation
 *.html linguist-documentation
 *.synctex.gz linguist-documentation
 *.js linguist-documentation
+*.htm linguist-documentation
