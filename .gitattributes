@@ -1,2 +1,18 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+*.1 linguist-documentation
+*.2 linguist-documentation
+*.3 linguist-documentation
+methodo_wAIS_python/log/* linguist-documentation
+methodo_wAIS_python/log_weird/* linguist-documentation
+**/__pycache__/* linguist-documentation
+*.md linguist-documentation
+*.aux linguist-documentation
+*.bbl linguist-documentation
+*.log* linguist-documentation
+*.maf linguist-documentation
+*.mtc* linguist-documentation
+*.out linguist-documentation
+*.html linguist-documentation
+*.synctex.gz linguist-documentation
+*.js linguist-documentation

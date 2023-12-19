@@ -13,13 +13,22 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 *.pyc
-*.log
+rapport/*.log* linguist-documentation
+methodo_wAIS_python/*.log* linguist-documentation*.1
 *.1
-*.1
+*.2
+*.3
+*.4
+*.5
+*.6
+*.7
+*.8
+*.9
 methodo_wAIS_python/log/debug.log.1
 rapport.zip
 rapport/rapport.zip
 .vscode/settings.json
+**/.vscode
 *.mtc*
 *.out
 *.maf
@@ -32,3 +41,5 @@ rapport/rapport.zip
 
 .vscode
 .DS_Store
+
+**/__pycache__
